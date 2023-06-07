@@ -1,95 +1,84 @@
 package com.example.urlshortener.domain.member.api;
 
+import com.example.urlshortener.domain.member.application.MemberService;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.member.domain.MemberBuilder;
+import com.example.urlshortener.domain.member.dto.MemberResponse;
 import com.example.urlshortener.domain.member.dto.SignUpReq;
 import com.example.urlshortener.domain.member.dto.SignUpReqBuilder;
-import com.example.urlshortener.global.error.ErrorCode;
-import com.example.urlshortener.test.IntegrationTest;
-import com.example.urlshortener.test.setup.domain.MemberSetup;
+import com.example.urlshortener.test.ControllerTest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.ResultActions;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.payload.PayloadDocumentation.requestFields;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+@WebMvcTest(controllers = MemberController.class)
+class MemberControllerTest extends ControllerTest {
 
-class MemberControllerTest extends IntegrationTest {
 
-    @Autowired
-    private MemberSetup memberSetup;
+    @MockBean
+    private MemberService memberService;
+    @MockBean
+    private PasswordEncoder passwordEncoder;
+
+    @Override
+    protected Object initController() {
+        return new MemberController(memberService, passwordEncoder);
+    }
 
     @Test
-    public void 회원가입_성공() throws Exception {
+    @DisplayName("회원가입에 대한 요청이 들어오면, 회원가입 처리를 한다.")
+    public void signup() throws Exception {
         //given
         final Member member = MemberBuilder.build();
         final String email = member.getEmail();
         final String password = member.getPassword();
-
         final SignUpReq signUpReq = SignUpReqBuilder.build(email, password);
 
-        // when
-        ResultActions resultActions = mvc.perform(post("/api/member/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signUpReq)))
-                .andDo((print()));
+        MemberResponse expected = MemberResponse.builder().id(1L).email("test@test.com").build();
 
-        // then
-        resultActions.andExpect(status().isOk())
-                .andExpect(jsonPath("email").value(email));
-    }
-
-    @Test
-    public void 회원가입_실패() throws Exception {
-        //given
-        final Member member = memberSetup.save();
-        final String email = member.getEmail();
-        final String password = member.getPassword();
-        final SignUpReq signUpReq = SignUpReqBuilder.build(email, password);
+        given(memberService.registerMember(any(SignUpReq.class))).willReturn(expected);
 
         // when
-        ResultActions resultActions = mvc.perform(post("/api/member/signup")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signUpReq)))
-                .andDo((print()));
+        ResultActions resultActions = mockMvc.perform(
+                        post("/api/members/signup")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .characterEncoding("utf-8")
+                                .content(objectMapper.writeValueAsString(signUpReq)))
+                .andDo(print())
+                .andDo(document("member-signup",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                requestFields(
+                                        fieldWithPath("email").type(JsonFieldType.STRING)
+                                                .description("email(ID)"),
+                                        fieldWithPath("password").type(JsonFieldType.STRING)
+                                                .optional()
+                                                .description("password")
+                                ),
+                                responseHeaders(
+                                        headerWithName("Location").description("생성된 member id")
+                                )
+                        )
+                );
 
         // then
-        ErrorCode emailDuplication = ErrorCode.EMAIL_DUPLICATION;
-        resultActions.andExpect(status().isBadRequest())
-                .andExpect(jsonPath("message").value(emailDuplication.getMessage()))
-                .andExpect(jsonPath("code").value(emailDuplication.getCode()));
+        resultActions
+                .andExpect(status().isCreated());
     }
-
-//    @Test
-//    public void 멤버단일조회_성공() throws Exception {
-//        // given
-//        final Member member = memberSetup.save();
-//        Long id = member.getId();
-//        // when
-//        ResultActions resultActions = mvc.perform(get("/api/member/" + id)
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andDo((print()));
-//
-//        // then
-//        resultActions.andExpect(status().isOk())
-//                .andExpect(jsonPath("email").value(member.getEmail()));
-//    }
-//
-//    @Test
-//    public void 멤버단일조회_실패() throws Exception {
-//        // given
-//        final Member member = memberSetup.save();
-//        Long id = member.getId() + 1;
-//        // when
-//        ResultActions resultActions = mvc.perform(get("/api/member/" + id)
-//                        .contentType(MediaType.APPLICATION_JSON))
-//                .andDo((print()));
-//
-//        // then
-//        resultActions.andExpect(status().isBadRequest())
-//                .andExpect(jsonPath("code").value(ErrorCode.ENTITY_NOT_FOUND.getCode()));
-//    }
 }

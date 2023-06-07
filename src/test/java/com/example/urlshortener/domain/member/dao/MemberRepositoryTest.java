@@ -3,6 +3,7 @@ package com.example.urlshortener.domain.member.dao;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.test.RepositoryTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -29,25 +30,30 @@ class MemberRepositoryTest extends RepositoryTest {
     }
 
     @Test
-    public void existsByEmail_존재하는_경우() {
+    @DisplayName("email로 회원존재 여부을 조회한다.")
+    public void existsByEmail() {
         boolean existsByEmail = memberRepository.existsByEmail(email);
         assertThat(existsByEmail).isTrue();
     }
 
     @Test
-    public void existsByEmail_존재하지않는_경우() {
+    @DisplayName("유효하지 않은 email로 회원존재 여부을 조회하면 False를 반환한다.")
+    public void existsByEmailWithInvalidEmail() {
         boolean existsByEmail = memberRepository.existsByEmail("tpgud@test.com");
         assertThat(existsByEmail).isFalse();
     }
 
     @Test
-    public void findByEmail_존재하는_경우() {
+    @DisplayName("email로 회원을 조회한다.")
+    public void findByEmail() {
         Optional<Member> byEmail = memberRepository.findByEmail(email);
         assertThat(byEmail.get()).isNotNull();
     }
 
     @Test
-    public void findByEmail_존재하지않는_경우() {
+    @DisplayName("유효하지 않은 email로 회원을 조회하면 예외를 던진다.")
+
+    public void findByEmailWithInvalidEmail() {
         Optional<Member> byEmail = memberRepository.findByEmail("tpgud@test.com");
         assertThatThrownBy(() -> byEmail.get()).isInstanceOf(NoSuchElementException.class);
     }
