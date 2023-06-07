@@ -1,80 +1,164 @@
 package com.example.urlshortener.domain.auth.api;
 
-import com.example.urlshortener.domain.auth.dto.SignInReq;
-import com.example.urlshortener.domain.auth.dto.SignInReqBuilder;
-import com.example.urlshortener.domain.member.domain.Member;
-import com.example.urlshortener.test.IntegrationTest;
-import com.example.urlshortener.test.setup.domain.MemberSetup;
+import com.example.urlshortener.domain.auth.application.AuthService;
+import com.example.urlshortener.domain.auth.dto.*;
+import com.example.urlshortener.test.ControllerTest;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
 
-import static com.example.urlshortener.global.error.ErrorCode.EMAIL_INVALID;
-import static com.example.urlshortener.global.error.ErrorCode.PASSWORD_INVALID;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
+import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
+import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-class AuthControllerTest extends IntegrationTest {
-    @Autowired
-    private MemberSetup memberSetup;
+@WebMvcTest(controllers = AuthController.class)
+class AuthControllerTest extends ControllerTest {
+
+    @MockBean
+    private AuthService authService;
+
+    @Override
+    protected Object initController() {
+        return new AuthController(authService);
+    }
 
     @Test
-    void 로그인_성공() throws Exception {
+    @DisplayName("로그인 요청이 들어오면 로그인 요청을 처리한다.")
+    void signin() throws Exception {
         // given
-        Member member = memberSetup.save();
-        String email = member.getEmail();
-        String password = memberSetup.getRawPassword();
-        SignInReq signInReq = SignInReqBuilder.build(email, password);
+        SignInReq request = SignInReq.builder()
+                .email("solver@test.com")
+                .password("password")
+                .build();
+
+        BasicLoginResponse expected = BasicLoginResponse.builder()
+                .email("solver@test.com")
+                .accessToken("TOKEN")
+                .refreshToken("REFRESH_TOKEN")
+                .build();
+
+        given(authService.signIn(any())).willReturn(expected);
 
         // when
-        ResultActions resultActions = mvc.perform(post("/api/member/signin")
+        ResultActions resultActions = mockMvc.perform(post("/api/auth/signin")
+                        .characterEncoding("utf-8")
+                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signInReq)))
-                .andDo((print()));
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andDo(document("auth-signin",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("email").type(JsonFieldType.STRING)
+                                        .description("email(ID)"),
+                                fieldWithPath("password").type(JsonFieldType.STRING)
+                                        .description("password")
+                        ),
+                        responseFields(
+                                fieldWithPath("email").type(JsonFieldType.STRING)
+                                        .description("email(ID)"),
+                                fieldWithPath("accessToken").type(JsonFieldType.STRING)
+                                        .description("access token"),
+                                fieldWithPath("refreshToken").type(JsonFieldType.STRING)
+                                        .description("refresh token")
+                        )
+                ));
 
         // then
         resultActions.andExpect(status().isOk());
     }
 
     @Test
-    void 로그인_실패_없는_email() throws Exception {
+    @DisplayName("OAUTH 로그인 요청이 들어오면 로그인 요청을 처리한다.")
+    void oauthSignin() throws Exception {
         // given
-        String email = "WRONG@WRONG.com";
-        String password = "WRONG";
-        SignInReq signInReq = SignInReqBuilder.build(email, password);
+
+        OAuthLoginResponse expected = OAuthLoginResponse.builder()
+                .email("solver@test.com")
+                .accessToken("TOKEN")
+                .refreshToken("REFRESH_TOKEN")
+                .build();
+
+        given(authService.oauthSignIn(any(), any())).willReturn(expected);
 
         // when
-        ResultActions resultActions = mvc.perform(post("/api/member/signin")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signInReq)))
-                .andDo((print()));
+        ResultActions resultActions = mockMvc.perform(get("/api/auth/oauth")
+                        .characterEncoding("utf-8")
+                        .param("provider", "PROVIDER")
+                        .param("code", "CODE"))
+                .andDo(print())
+                .andDo(document("auth-oauth",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        queryParameters(
+                                parameterWithName("provider").description("OAuth Provider e.g. github, ... "),
+                                parameterWithName("code").description("Authorization code from OAuth Provider")),
+                        responseFields(
+                                fieldWithPath("email").type(JsonFieldType.STRING)
+                                        .description("email(ID)"),
+                                fieldWithPath("accessToken").type(JsonFieldType.STRING)
+                                        .description("access token"),
+                                fieldWithPath("refreshToken").type(JsonFieldType.STRING)
+                                        .description("refresh token")
+                        )
+                ));
 
         // then
-        resultActions.andExpect(status().isBadRequest())
-                .andExpect(jsonPath("message").value(EMAIL_INVALID.getMessage()))
-                .andExpect(jsonPath("code").value(EMAIL_INVALID.getCode()));
+        resultActions.andExpect(status().isOk());
     }
 
     @Test
-    void 로그인_pw_불일치() throws Exception{
+    @DisplayName("Refresh Token과 함께 인증 refresh 요청이 들어오면 처리한다.")
+    void refresh() throws Exception {
         // given
-        Member member = memberSetup.save();
-        String email = member.getEmail();
-        String password = "WRONG";
-        SignInReq signInReq = SignInReqBuilder.build(email, password);
+        RefreshAuthRequest request = RefreshAuthRequest.builder()
+                .email("solver@test.com")
+                .refreshToken("REFRESH_TOKEN")
+                .build();
+        RefreshAuthResponse expected = RefreshAuthResponse.builder()
+                .accessToken("ACCESS_TOKEN")
+                .build();
+
+        given(authService.refreshAuth(any())).willReturn(expected);
 
         // when
-        ResultActions resultActions = mvc.perform(post("/api/member/signin")
+        ResultActions resultActions = mockMvc.perform(get("/api/auth/refresh")
+                        .characterEncoding("utf-8")
+                        .with(csrf())
+                        .header("authorization", "Bearer TOKEN")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(signInReq)))
-                .andDo((print()));
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andDo(document("auth-refresh",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("email").type(JsonFieldType.STRING)
+                                        .description("email(ID)"),
+                                fieldWithPath("refresh_token").type(JsonFieldType.STRING)
+                                        .description("refresh token")
+                        ),
+                        responseFields(
+                                fieldWithPath("access_token").type(JsonFieldType.STRING)
+                                        .description("access token")
+                        )
+                ));
 
         // then
-        resultActions.andExpect(status().isBadRequest())
-                .andExpect(jsonPath("message").value(PASSWORD_INVALID.getMessage()))
-                .andExpect(jsonPath("code").value(PASSWORD_INVALID.getCode()));
+        resultActions.andExpect(status().isOk());
     }
 }

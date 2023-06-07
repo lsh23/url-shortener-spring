@@ -1,23 +1,31 @@
 package com.example.urlshortener.domain.auth.api;
 
 import com.example.urlshortener.domain.auth.application.AuthService;
-import com.example.urlshortener.domain.auth.dto.SignInReq;
-import com.example.urlshortener.domain.member.dto.MemberResponse;
+import com.example.urlshortener.domain.auth.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/member")
+@RequestMapping("/api/auth")
 public class AuthController {
     final private AuthService authService;
 
     @PostMapping("/signin")
-    public ResponseEntity<MemberResponse> signIn(@RequestBody final SignInReq signInReq) {
+    public ResponseEntity<BasicLoginResponse> signIn(@RequestBody final SignInReq signInReq) {
         return ResponseEntity.ok(authService.signIn(signInReq));
     }
+
+    @GetMapping("/oauth")
+    public ResponseEntity<OAuthLoginResponse> oauthSignIn(@RequestParam final String provider, @RequestParam String code) {
+        return ResponseEntity.ok(authService.oauthSignIn(provider, code));
+    }
+
+    @GetMapping("/refresh")
+    public ResponseEntity<RefreshAuthResponse> refreshAuth(@RequestBody final RefreshAuthRequest refreshTokenReq) {
+        RefreshAuthResponse refreshAuthResponse = authService.refreshAuth(refreshTokenReq);
+        return ResponseEntity.ok().body(refreshAuthResponse);
+    }
+
 }
