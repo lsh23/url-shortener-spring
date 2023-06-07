@@ -1,0 +1,38 @@
+[[Auth-API]]
+== Auth API
+
+[[AUth-signin]]
+=== ID/PW 로그인
+
+==== HTTP Request
+include::{snippets}/auth-signin/http-request.adoc[]
+include::{snippets}/auth-signin/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/auth-signin/http-response.adoc[]
+include::{snippets}/auth-signin/response-fields.adoc[]
+
+
+[[Auth-oauth]]
+=== OAUTH 로그인
+
+==== HTTP Request
+include::{snippets}/auth-oauth/http-request.adoc[]
+include::{snippets}/auth-oauth/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/auth-oauth/http-response.adoc[]
+include::{snippets}/auth-oauth/response-fields.adoc[]
+
+[[Auth-refresh]]
+=== refresh
+
+==== HTTP Request
+include::{snippets}/auth-refresh/http-request.adoc[]
+include::{snippets}/auth-refresh/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/auth-refresh/http-response.adoc[]
+include::{snippets}/auth-refresh/response-fields.adoc[]
+
+
