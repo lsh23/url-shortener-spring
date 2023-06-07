@@ -11,15 +11,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.net.URI;
+
 @RestController
-@RequestMapping("/api/member")
+@RequestMapping("/api/members")
 @RequiredArgsConstructor
 public class MemberController {
     private final MemberService memberService;
     private final PasswordEncoder passwordEncoder;
     @PostMapping("/signup")
-    public ResponseEntity<MemberResponse> registerMember(@RequestBody final SignUpReq signUpReq){
+    public ResponseEntity<Void> registerMember(@RequestBody final SignUpReq signUpReq){
         signUpReq.setPassword(passwordEncoder.encode(signUpReq.getPassword()));
-        return ResponseEntity.ok(memberService.registerMember(signUpReq));
+        MemberResponse memberResponse = memberService.registerMember(signUpReq);
+        return ResponseEntity.created(URI.create("/api/members/"+memberResponse.getId())).build();
     }
 }
