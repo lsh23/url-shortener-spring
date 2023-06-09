@@ -30,11 +30,6 @@ class AuthControllerTest extends ControllerTest {
     @MockBean
     private AuthService authService;
 
-    @Override
-    protected Object initController() {
-        return new AuthController(authService);
-    }
-
     @Test
     @DisplayName("로그인 요청이 들어오면 로그인 요청을 처리한다.")
     void signin() throws Exception {
