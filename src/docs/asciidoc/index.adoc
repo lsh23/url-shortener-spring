@@ -11,5 +11,6 @@ endif::[]
 
 include::api/member/member.adoc[]
 include::api/auth/auth.adoc[]
+include::api/url/url.adoc[]
 
 

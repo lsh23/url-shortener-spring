@@ -1,0 +1,15 @@
+[[URL-API]]
+== URL API
+
+[[URL-Post]]
+=== URL Post
+
+==== HTTP Request
+include::{snippets}/url-post/http-request.adoc[]
+include::{snippets}/url-post/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/url-post/http-response.adoc[]
+include::{snippets}/url-post/response-fields.adoc[]
+
+

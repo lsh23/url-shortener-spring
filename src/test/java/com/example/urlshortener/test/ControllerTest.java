@@ -38,5 +38,4 @@ public abstract class ControllerTest {
                 .build();
     }
 
-    protected abstract Object initController();
 }

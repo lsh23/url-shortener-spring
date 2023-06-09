@@ -13,7 +13,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.web.servlet.ResultActions;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -33,13 +32,6 @@ class MemberControllerTest extends ControllerTest {
 
     @MockBean
     private MemberService memberService;
-    @MockBean
-    private PasswordEncoder passwordEncoder;
-
-    @Override
-    protected Object initController() {
-        return new MemberController(memberService, passwordEncoder);
-    }
 
     @Test
     @DisplayName("회원가입에 대한 요청이 들어오면, 회원가입 처리를 한다.")
