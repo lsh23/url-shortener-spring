@@ -11,6 +11,17 @@ spring:
         show_sql: true
         format_sql: true
         use_sql_comments: true
+  jwt:
+    token:
+      secret-key: testjwtsecretkeyforaccesstokentestjwtsecretkeyforaccesstoken
+      expire-length: 1800000
+      refresh-secret-key: testjwtsecretkeyforrefreshtokentestjwtsecretkeyforrefreshtoken
+      refresh-expire-length: 259200000
+
+  data:
+    redis:
+      port: 26379
+      host: localhost
 
 logging:
   level:

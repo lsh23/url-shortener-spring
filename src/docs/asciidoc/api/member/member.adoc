@@ -1,0 +1,13 @@
+[[Member-API]]
+== Member API
+
+[[Member-signup]]
+=== 회원가입
+
+==== HTTP Request
+include::{snippets}/member-signup/http-request.adoc[]
+include::{snippets}/member-signup/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/member-signup/http-response.adoc[]
+include::{snippets}/member-signup/response-headers.adoc[]

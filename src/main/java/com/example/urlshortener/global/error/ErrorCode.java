@@ -14,9 +14,17 @@ public enum ErrorCode {
     HANDLE_ACCESS_DENIED(403, "C006", "Access is Denied"),
 
     // Member
-    EMAIL_DUPLICATION(400,"M001", "이미 등록된 이메일입니다."),
-    EMAIL_INVALID(400,"M002", "등록되지 않은 이메일입니다."),
-    PASSWORD_INVALID(400, "M003", "잘못된 패스워드 입니다.");
+    EMAIL_DUPLICATION(400, "M001", "이미 등록된 이메일입니다."),
+    EMAIL_INVALID(400, "M002", "등록되지 않은 이메일입니다."),
+    PASSWORD_INVALID(400, "M003", "잘못된 패스워드 입니다."),
+
+    // OAuth
+    TOKEN_NOT_MATCHED_BY_EMAIL(400, "O001", "이메일에 해당하는 refresh token 이 존재하지 않습니다."),
+
+    INVALID_REFRESH_TOKEN(400, "O002", "유효하지 않은 refresh token 입니다."),
+    INVALID_TOKEN(400, "O003", "유효하지 않은 token 입니다."),
+    EXPIRED_TOKEN(400,"O004","만료된 token 입니다."),
+    FETCH_ACCESS_TOKEN(500, "O005","oauth login에 실패했습니다.");
 
 
     private int status;

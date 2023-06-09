@@ -1,92 +1,179 @@
 package com.example.urlshortener.domain.auth.application;
 
-import com.example.urlshortener.domain.auth.dto.SignInReq;
-import com.example.urlshortener.domain.auth.dto.SignInReqBuilder;
+import com.example.urlshortener.domain.auth.dao.RefreshTokenRepository;
+import com.example.urlshortener.domain.auth.dto.*;
+import com.example.urlshortener.domain.auth.exception.InvalidRefreshToken;
+import com.example.urlshortener.domain.auth.exception.TokenNotMatchedByEmail;
 import com.example.urlshortener.domain.member.dao.MemberRepository;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.member.domain.MemberBuilder;
-import com.example.urlshortener.domain.member.dto.MemberResponse;
 import com.example.urlshortener.domain.member.exception.EmailNotFoundException;
 import com.example.urlshortener.domain.member.exception.PasswordInvalidException;
-import com.example.urlshortener.test.MockTest;
+import com.example.urlshortener.test.IntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 
-class AuthServiceTest extends MockTest {
+class AuthServiceTest extends IntegrationTest {
 
-    @InjectMocks
+    @Autowired
     private AuthService authService;
-
-    @Mock
+    @Autowired
     private MemberRepository memberRepository;
-
-    @Mock
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
-
     private Member member;
 
     @BeforeEach
     public void setUp() throws Exception {
         member = MemberBuilder.build();
+        memberRepository.deleteAllInBatch();
+        refreshTokenRepository.deleteAll();
     }
 
+    @MockBean
+    private OauthHandler oauthHandler;
+
     @Test
-    public void 로그인_성공() {
+    @DisplayName("PW를 검증하고, 로그인 처리를 한다.")
+    public void signinWithPassword() {
         // given
-        final String email = member.getEmail();
+        String encodedPassWord = passwordEncoder.encode(member.getPassword());
+        Member savedMember = MemberBuilder.build(member.getEmail(), encodedPassWord);
+        memberRepository.save(savedMember);
+
+        final String email = savedMember.getEmail();
         final String password = member.getPassword();
         final SignInReq signInReq = SignInReqBuilder.build(email, password);
 
-        given(memberRepository.existsByEmail(signInReq.getEmail())).willReturn(true);
-        given(memberRepository.findByEmail(signInReq.getEmail())).willReturn(Optional.of(member));
-        given(passwordEncoder.matches(any(), any())).willReturn(true);
         // when
-        MemberResponse memberResponse = authService.signIn(signInReq);
+        BasicLoginResponse basicLoginResponse = authService.signIn(signInReq);
 
         // then
-        assertThat(memberResponse.getEmail()).isEqualTo(member.getEmail());
+        assertThat(basicLoginResponse.getEmail()).isEqualTo(member.getEmail());
+        assertThat(basicLoginResponse.getAccessToken()).isNotBlank();
+        assertThat(basicLoginResponse.getRefreshToken()).isNotBlank();
     }
 
     @Test
-    public void 로그인_실패_존재하지않는_이메일() {
+    @DisplayName("존재하지않는 이메일로 로그인을 시도하면 예외를 던진다.")
+    public void signinWithInvalidEmail() {
         // given
         final String email = member.getEmail();
         final String password = member.getPassword();
         final SignInReq signInReq = SignInReqBuilder.build(email, password);
 
-        given(memberRepository.existsByEmail(signInReq.getEmail())).willReturn(false);
-
-        int i = 0;
-        for (; i < 10; i++) {
-            System.out.println("i = " + i);
-        }
-        System.out.println("i = " + i);
         // when
         assertThatThrownBy(() -> authService.signIn(signInReq)).isInstanceOf(EmailNotFoundException.class);
     }
 
     @Test
-    public void 로그인_실패_패스워드_불일치() {
+    @DisplayName("유효하지않은 패스워드로 로그인을 시도하면 예외를 던진다.")
+    public void signinWithInvalidPassword() {
         // given
+        memberRepository.save(member);
         final String email = member.getEmail();
         final String password = "wrong";
         final SignInReq signInReq = SignInReqBuilder.build(email, password);
 
-        given(memberRepository.existsByEmail(signInReq.getEmail())).willReturn(true);
-        given(memberRepository.findByEmail(signInReq.getEmail())).willReturn(Optional.of(member));
-        given(passwordEncoder.matches(any(), any())).willReturn(false);
-
         // when
         assertThatThrownBy(() -> authService.signIn(signInReq)).isInstanceOf(PasswordInvalidException.class);
+    }
+
+    @Test
+    @DisplayName("oauth 로그인 처리를 한다.")
+    public void oauthSighin() {
+        // given
+        memberRepository.save(member);
+        OauthUserInformation oauthUserInformation = OauthUserInformation.builder().email(member.getEmail()).build();
+        given(oauthHandler.getUserInfoFromAuthCode("github", "accessToken")).willReturn(oauthUserInformation);
+
+        // when
+        OAuthLoginResponse oAuthLoginResponse = authService.oauthSignIn("github", "accessToken");
+
+        // then
+        assertThat(oAuthLoginResponse.getEmail()).isEqualTo(member.getEmail());
+    }
+
+    @Test
+    @DisplayName("회원가입이 되어있지 않은 email로 oauth 로그인 시도하면, 예외를 던진다.")
+    public void Oauth_로그인_실패() {
+        //given
+        OauthUserInformation oauthUserInformation = OauthUserInformation.builder().email(member.getEmail()).build();
+        given(oauthHandler.getUserInfoFromAuthCode("github", "accessToken")).willReturn(oauthUserInformation);
+
+        // when then
+        assertThatThrownBy(() -> authService.oauthSignIn("github", "accessToken")).isInstanceOf(EmailNotFoundException.class);
+    }
+
+    @Test
+    @DisplayName("refresh 토큰을 검증하고, 새로운 access token을 발급한다.")
+    public void refresh() {
+        // given
+        String encodedPassWord = passwordEncoder.encode(member.getPassword());
+        Member savedMember = MemberBuilder.build(member.getEmail(), encodedPassWord);
+        memberRepository.save(savedMember);
+
+        final String email = savedMember.getEmail();
+        final String password = member.getPassword();
+        final SignInReq signInReq = SignInReqBuilder.build(email, password);
+
+        BasicLoginResponse basicLoginResponse = authService.signIn(signInReq);
+
+        // when
+        RefreshAuthRequest request = RefreshAuthRequest.builder()
+                .email(email)
+                .refreshToken(basicLoginResponse.getRefreshToken())
+                .build();
+
+        RefreshAuthResponse refreshAuthResponse = authService.refreshAuth(request);
+
+        // then
+        assertThat(refreshAuthResponse.getAccessToken()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("유효하지 않은 refresh token에 대한 요청이 들어오면, 예외를 던진다.")
+    public void refreshWithInvalidRefreshToken() {
+        // given
+        String encodedPassWord = passwordEncoder.encode(member.getPassword());
+        Member savedMember = MemberBuilder.build(member.getEmail(), encodedPassWord);
+        memberRepository.save(savedMember);
+
+        final String email = savedMember.getEmail();
+        final String password = member.getPassword();
+        final SignInReq signInReq = SignInReqBuilder.build(email, password);
+
+        authService.signIn(signInReq);
+
+        RefreshAuthRequest request = RefreshAuthRequest.builder()
+                .email(email)
+                .refreshToken("INVALID_REFRESH_TOKEN")
+                .build();
+
+        // when then
+        assertThatThrownBy(()->authService.refreshAuth(request)).isInstanceOf(InvalidRefreshToken.class);
+    }
+
+    @Test
+    @DisplayName("유효하지 않은 email로 인증 refresh 요청이 들어오면, 예외를 던진다.")
+    public void refreshWithInvalidEmail() {
+        // given
+        RefreshAuthRequest request = RefreshAuthRequest.builder()
+                .email("invalid@email.com")
+                .refreshToken("INVALID_REFRESH_TOKEN")
+                .build();
+
+        // when then
+        assertThatThrownBy(()->authService.refreshAuth(request)).isInstanceOf(TokenNotMatchedByEmail.class);
     }
 }

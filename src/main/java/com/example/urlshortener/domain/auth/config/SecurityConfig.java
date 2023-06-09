@@ -1,4 +1,4 @@
-package com.example.urlshortener.global.config;
+package com.example.urlshortener.domain.auth.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +25,4 @@ public class SecurityConfig {
                 .headers().frameOptions().sameOrigin();
         return http.build();
     }
-
-
 }

@@ -10,7 +10,17 @@ spring:
       hibernate:
         show_sql: true
         format_sql: true
+  jwt:
+    token:
+      secret-key: localjwtsecretkeyforaccesstokenlocaljwtsecretkeyforaccesstoken
+      expire-length: 1800000
+      refresh-secret-key: localjwtsecretkeyforrefreshtokenlocaljwtsecretkeyforrefreshtoken
+      refresh-expire-length: 259200000
 
+  data:
+    redis:
+      port: 16379
+      host: localhost
 
 logging:
   level:
