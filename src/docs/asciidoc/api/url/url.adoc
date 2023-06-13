@@ -12,4 +12,14 @@ include::{snippets}/url-post/request-fields.adoc[]
 include::{snippets}/url-post/http-response.adoc[]
 include::{snippets}/url-post/response-fields.adoc[]
 
+[[URL-redirect]]
+=== URL redirect
+
+==== HTTP Request
+include::{snippets}/url-redirect/http-request.adoc[]
+include::{snippets}/url-redirect/request-body.adoc[]
+
+==== HTTP Response
+include::{snippets}/url-redirect/http-response.adoc[]
+include::{snippets}/url-redirect/response-body.adoc[]
 
