@@ -18,7 +18,7 @@ public class Url {
     @Column(name = "full_url")
     private String fullUrl;
 
-    @Column(name = "hash")
+    @Column(name = "hash", unique = true, nullable = false)
     private String hash;
 
     @ManyToOne(fetch = FetchType.LAZY)

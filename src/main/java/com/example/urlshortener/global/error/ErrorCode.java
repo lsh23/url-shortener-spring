@@ -24,8 +24,10 @@ public enum ErrorCode {
     INVALID_REFRESH_TOKEN(400, "O002", "유효하지 않은 refresh token 입니다."),
     INVALID_TOKEN(400, "O003", "유효하지 않은 token 입니다."),
     EXPIRED_TOKEN(400,"O004","만료된 token 입니다."),
-    FETCH_ACCESS_TOKEN(500, "O005","oauth login에 실패했습니다.");
+    FETCH_ACCESS_TOKEN(500, "O005","oauth login에 실패했습니다."),
 
+    // URL
+    INVALID_HASH(400, "U001", "hash 값에 대응 되는 URL이 존재하지 않습니다.");
 
     private int status;
     private final String code;

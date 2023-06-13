@@ -12,13 +12,17 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
 
+import java.net.URI;
+
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(controllers = UrlController.class)
@@ -68,4 +72,25 @@ class UrlControllerTest extends ControllerTest {
         // then
         resultActions.andExpect(status().isCreated());
     }
+
+    @Test
+    @DisplayName("URL Shorten Url 접근 시, 저장되어 있는 full URL로 redirect 한다.")
+    void redirect() throws Exception {
+        // given
+        given(urlService.redirect("hash")).willReturn(new URI("www.test.com"));
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/hash"))
+                .andDo(print())
+                .andDo(document("url-redirect",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint())
+                ));
+
+        // then
+        resultActions
+                .andExpect(status().isSeeOther())
+                .andExpect(redirectedUrl("www.test.com"));
+    }
+
 }

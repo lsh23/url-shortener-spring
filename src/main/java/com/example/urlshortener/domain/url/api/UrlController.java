@@ -6,9 +6,9 @@ import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.net.URISyntaxException;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,4 +20,10 @@ public class UrlController {
         return ResponseEntity.status(HttpStatus.CREATED).body(urlService.shortenUrl(shortenUrlRequest));
     }
 
+    @GetMapping("/{hash}")
+    public ResponseEntity<Void> redirect(@PathVariable String hash) throws URISyntaxException {
+        return ResponseEntity.status(HttpStatus.SEE_OTHER)
+                .location(urlService.redirect(hash))
+                .build();
+    }
 }

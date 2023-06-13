@@ -4,6 +4,7 @@ import com.example.urlshortener.domain.url.dao.UrlRepository;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
 import com.example.urlshortener.test.AcceptanceTest;
+import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.BeforeEach;
@@ -52,6 +53,37 @@ public class UrlAcceptanceTest extends AcceptanceTest {
         assertThat(extract.statusCode()).isEqualTo(HttpStatus.CREATED.value());
         assertThat(body.getFullUrl()).isEqualTo("www.test.com");
 
+    }
+
+    @Test
+    @DisplayName("URL Shorten Url redirect API")
+    void redirect() throws Exception {
+        // given
+        ShortenUrlRequest request = ShortenUrlRequest.builder()
+                .fullUrl("http://localhost:"+ RestAssured.port+"/actuator/health")
+                .build();
+
+        ExtractableResponse<Response> expected = given().log().all()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(request)
+                .when()
+                .post("/api/url")
+                .then().log().all()
+                .extract();
+
+        ShortenUrlResponse body = expected.body().as(ShortenUrlResponse.class);
+        String hash = body.getHash();
+
+        // when
+        ExtractableResponse<Response> extract =
+                given().log().all()
+                        .when()
+                        .get("/"+hash)
+                        .then().log().all()
+                        .extract();
+
+        // then
+        assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
 }
