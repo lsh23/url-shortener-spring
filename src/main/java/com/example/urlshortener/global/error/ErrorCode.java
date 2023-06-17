@@ -27,7 +27,8 @@ public enum ErrorCode {
     FETCH_ACCESS_TOKEN(500, "O005","oauth login에 실패했습니다."),
 
     // URL
-    INVALID_HASH(400, "U001", "hash 값에 대응 되는 URL이 존재하지 않습니다.");
+    INVALID_HASH(400, "U001", "hash 값에 대응 되는 URL이 존재하지 않습니다."),
+    EXPIRED_URL(400, "U002", "해당 url은 만료된 url입니다.");
 
     private int status;
     private final String code;

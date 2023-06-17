@@ -3,6 +3,7 @@ package com.example.urlshortener.domain.url.api;
 import com.example.urlshortener.domain.url.application.UrlService;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
+import com.example.urlshortener.domain.url.exception.UrlExpiredException;
 import com.example.urlshortener.test.ControllerTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -15,6 +16,8 @@ import org.springframework.test.web.servlet.ResultActions;
 import java.net.URI;
 
 import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
+import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
@@ -82,13 +85,43 @@ class UrlControllerTest extends ControllerTest {
                 .andDo(print())
                 .andDo(document("url-redirect",
                         preprocessRequest(prettyPrint()),
-                        preprocessResponse(prettyPrint())
+                        preprocessResponse(prettyPrint()),
+                        responseHeaders(
+                                headerWithName("Location").description("hash 값에 대응되는 url")
+                        )
                 ));
 
         // then
         resultActions
                 .andExpect(status().isSeeOther())
                 .andExpect(redirectedUrl("www.test.com"));
+    }
+
+    @Test
+    @DisplayName("만료된 URL Shorten Url 접근시, 예외 메시지를 담아 응답한다.")
+    void redirectExpiredUrl() throws Exception {
+        // given
+        given(urlService.redirect("hash")).willThrow(new UrlExpiredException());
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/hash"))
+                .andDo(print())
+                .andDo(document("url-redirect-expired",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        responseFields(
+                                fieldWithPath("message").type(JsonFieldType.STRING)
+                                        .description("오류 메시지"),
+                                fieldWithPath("code").type(JsonFieldType.STRING)
+                                        .description("Application error code"),
+                                fieldWithPath("status").type(JsonFieldType.NUMBER)
+                                        .description("http status")
+                        )
+                ));
+
+        // then
+        resultActions
+                .andExpect(status().isBadRequest());
     }
 
 }

@@ -5,11 +5,13 @@ import com.example.urlshortener.domain.url.domain.Url;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
 import com.example.urlshortener.domain.url.exception.HashNotFoundException;
+import com.example.urlshortener.domain.url.exception.UrlExpiredException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -28,7 +30,12 @@ public class UrlService {
 
     public URI redirect(String hash) throws URISyntaxException {
         Url url = urlRepository.findByHash(hash)
-                .orElseThrow(()-> new HashNotFoundException());
+                .orElseThrow(() -> new HashNotFoundException());
+
+        if (url.checkExpired(LocalDateTime.now())) {
+            throw new UrlExpiredException();
+        }
+
         return new URI(url.getFullUrl());
     }
 }

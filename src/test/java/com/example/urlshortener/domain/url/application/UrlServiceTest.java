@@ -1,15 +1,22 @@
 package com.example.urlshortener.domain.url.application;
 
 import com.example.urlshortener.domain.url.dao.UrlRepository;
+import com.example.urlshortener.domain.url.domain.Url;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
+import com.example.urlshortener.domain.url.exception.UrlExpiredException;
 import com.example.urlshortener.test.IntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.time.LocalDateTime;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class UrlServiceTest extends IntegrationTest {
 
@@ -39,4 +46,40 @@ class UrlServiceTest extends IntegrationTest {
         assertThat(response.getHash()).isNotBlank();
     }
 
+    @Test
+    @DisplayName("hash값으로 redirect할 url을 조회한다.")
+    void redirect() throws URISyntaxException {
+        // given
+        String url = "www.test.com";
+        Url savedUrl = Url.builder()
+                .fullUrl(url)
+                .hash(UrlShortener.shortenUrl(url))
+                .expiredAt(LocalDateTime.now().plusHours(1))
+                .build();
+        urlRepository.save(savedUrl);
+
+        // when
+        URI redirect = urlService.redirect(UrlShortener.shortenUrl(url));
+
+        // then
+        assertThat(redirect.getPath()).isEqualTo("www.test.com");
+    }
+
+    @Test
+    @DisplayName("만료된 url을 조회하면 예외를 던진다")
+    void redirectExpiredURL() throws URISyntaxException {
+        // given
+        String url = "www.test.com";
+        Url savedUrl = Url.builder()
+                .fullUrl(url)
+                .hash(UrlShortener.shortenUrl(url))
+                .expiredAt(LocalDateTime.now().minusHours(1))
+                .build();
+        urlRepository.save(savedUrl);
+
+        // when // then
+        assertThatThrownBy(()->urlService.redirect(UrlShortener.shortenUrl(url))).isInstanceOf(UrlExpiredException.class);
+
+
+    }
 }
