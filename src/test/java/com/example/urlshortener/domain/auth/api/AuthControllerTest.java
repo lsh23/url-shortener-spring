@@ -18,7 +18,6 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.parameterWithName;
 import static org.springframework.restdocs.request.RequestDocumentation.queryParameters;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -50,7 +49,6 @@ class AuthControllerTest extends ControllerTest {
         // when
         ResultActions resultActions = mockMvc.perform(post("/api/auth/signin")
                         .characterEncoding("utf-8")
-                        .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
@@ -133,7 +131,6 @@ class AuthControllerTest extends ControllerTest {
         // when
         ResultActions resultActions = mockMvc.perform(get("/api/auth/refresh")
                         .characterEncoding("utf-8")
-                        .with(csrf())
                         .header("authorization", "Bearer TOKEN")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))

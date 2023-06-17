@@ -12,4 +12,24 @@ include::{snippets}/url-post/request-fields.adoc[]
 include::{snippets}/url-post/http-response.adoc[]
 include::{snippets}/url-post/response-fields.adoc[]
 
+[[URL-redirect]]
+=== URL redirect
+
+==== HTTP Request
+include::{snippets}/url-redirect/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/url-redirect/http-response.adoc[]
+include::{snippets}/url-redirect/response-headers.adoc[]
+
+
+[[URL-redirect-expired]]
+=== URL redirect - 만료된 url 요청
+
+==== HTTP Request
+include::{snippets}/url-redirect-expired/http-request.adoc[]
+
+==== HTTP Response
+include::{snippets}/url-redirect-expired/http-response.adoc[]
+include::{snippets}/url-redirect-expired/response-fields.adoc[]
 

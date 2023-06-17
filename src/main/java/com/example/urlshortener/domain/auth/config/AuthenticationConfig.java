@@ -25,7 +25,8 @@ public class AuthenticationConfig implements WebMvcConfigurer {
                 "/api/auth/signin",
                 "/docs/index.html",
                 "/favicon.ico",
-                "/api/url"
+                "/api/url",
+                "/{hash}"
         );
 
         registry.addInterceptor(loginInterceptor)
