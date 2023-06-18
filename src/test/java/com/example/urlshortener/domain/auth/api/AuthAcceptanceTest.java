@@ -2,10 +2,7 @@ package com.example.urlshortener.domain.auth.api;
 
 import com.example.urlshortener.domain.auth.application.OauthHandler;
 import com.example.urlshortener.domain.auth.dao.RefreshTokenRepository;
-import com.example.urlshortener.domain.auth.dto.OAuthLoginResponse;
-import com.example.urlshortener.domain.auth.dto.OauthUserInformation;
-import com.example.urlshortener.domain.auth.dto.RefreshAuthRequest;
-import com.example.urlshortener.domain.auth.dto.SignInReq;
+import com.example.urlshortener.domain.auth.dto.*;
 import com.example.urlshortener.domain.member.dao.MemberRepository;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.member.domain.MemberBuilder;
@@ -104,18 +101,18 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     void refreshAuth() {
         // given
         requestSignup();
-        OAuthLoginResponse oAuthLoginResponse = requestSignin();
+        BasicLoginResponse basicLoginResponse = requestSignin();
 
         RefreshAuthRequest request = RefreshAuthRequest.builder()
-                .email(oAuthLoginResponse.getEmail())
-                .refreshToken(oAuthLoginResponse.getRefreshToken())
+                .email(basicLoginResponse.getEmail())
+                .refreshToken(basicLoginResponse.getRefreshToken())
                 .build();
 
         // when
         ExtractableResponse<Response> extract =
                 given().log().all()
                         .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .header("authorization", "Bearer " + oAuthLoginResponse.getAccessToken())
+                        .header("authorization", "Bearer " + basicLoginResponse.getAccessToken())
                         .body(request)
                         .when()
                         .get("/api/auth/refresh")
@@ -145,7 +142,7 @@ public class AuthAcceptanceTest extends AcceptanceTest {
         return member;
     }
 
-    private OAuthLoginResponse requestSignin() {
+    private BasicLoginResponse requestSignin() {
         final Member member = MemberBuilder.build();
         final String email = member.getEmail();
         final String password = member.getPassword();
@@ -162,6 +159,6 @@ public class AuthAcceptanceTest extends AcceptanceTest {
                 .then().log().all()
                 .extract()
                 .response()
-                .as(OAuthLoginResponse.class);
+                .as(BasicLoginResponse.class);
     }
 }

@@ -9,12 +9,15 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class BasicLoginResponse {
+
+    private Long id;
     private String email;
     private String accessToken;
     private String refreshToken;
 
     @Builder
-    public BasicLoginResponse(String email, String accessToken, String refreshToken) {
+    public BasicLoginResponse(Long id, String email, String accessToken, String refreshToken) {
+        this.id = id;
         this.email = email;
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
@@ -22,6 +25,7 @@ public class BasicLoginResponse {
 
     public static BasicLoginResponse of(Member member, String token, String refreshToken) {
         return BasicLoginResponse.builder()
+                .id(member.getId())
                 .email(member.getEmail())
                 .accessToken(token)
                 .refreshToken(refreshToken)
