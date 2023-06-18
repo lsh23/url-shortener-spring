@@ -1,6 +1,7 @@
 package com.example.urlshortener.domain.url.api;
 
 import com.example.urlshortener.domain.url.application.UrlService;
+import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
 import com.example.urlshortener.domain.url.exception.UrlExpiredException;
@@ -73,6 +74,52 @@ class UrlControllerTest extends ControllerTest {
         // then
         resultActions.andExpect(status().isCreated());
     }
+
+    @Test
+    @DisplayName("로그인이 된 상태에서의 URL Shorten 요청을 처리한다.")
+    void shortenUrlForMe() throws Exception {
+        // given
+        ShortenUrlForMeRequest request = ShortenUrlForMeRequest.builder()
+                .memberId(1L)
+                .fullUrl("www.test.com")
+                .build();
+
+        ShortenUrlResponse expected = ShortenUrlResponse.builder()
+                .fullUrl("www.test.com")
+                .hash("hash")
+                .build();
+
+        given(urlService.shortenUrlForMe(request)).willReturn(expected);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(post("/api/me/url")
+                        .characterEncoding("utf-8")
+                        .header("authorization", "Bearer TOKEN")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andDo(document("url-post-logged-in",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestFields(
+                                fieldWithPath("memberId").type(JsonFieldType.NUMBER)
+                                        .description("memberId").optional(),
+                                fieldWithPath("fullUrl").type(JsonFieldType.STRING)
+                                        .description("full URL")
+                        ),
+                        responseFields(
+                                fieldWithPath("fullUrl").type(JsonFieldType.STRING)
+                                        .description("full URL"),
+                                fieldWithPath("hash").type(JsonFieldType.STRING)
+                                        .description("hash result for shorten")
+
+                        )
+                ));
+
+        // then
+        resultActions.andExpect(status().isCreated());
+    }
+
 
     @Test
     @DisplayName("URL Shorten Url 접근 시, 저장되어 있는 full URL로 redirect 한다.")

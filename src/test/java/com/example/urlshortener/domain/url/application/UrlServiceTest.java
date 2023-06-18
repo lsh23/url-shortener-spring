@@ -1,7 +1,10 @@
 package com.example.urlshortener.domain.url.application;
 
+import com.example.urlshortener.domain.member.dao.MemberRepository;
+import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.url.dao.UrlRepository;
 import com.example.urlshortener.domain.url.domain.Url;
+import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
 import com.example.urlshortener.domain.url.exception.UrlExpiredException;
@@ -26,9 +29,14 @@ class UrlServiceTest extends IntegrationTest {
     @Autowired
     private UrlRepository urlRepository;
 
+    @Autowired
+    private MemberRepository memberRepository;
+
+
     @BeforeEach
     public void setUp() throws Exception {
         urlRepository.deleteAllInBatch();
+        memberRepository.deleteAllInBatch();
     }
 
     @Test
@@ -41,6 +49,27 @@ class UrlServiceTest extends IntegrationTest {
 
         // when
         ShortenUrlResponse response = urlService.shortenUrl(request);
+
+        // then
+        assertThat(response.getHash()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("full url와 memberId을 가지고 hash값을 생성하고 저장한다.")
+    void shortenUrlForMe(){
+        // given
+        Member member = Member.builder()
+                .email("test@test.com")
+                .build();
+        memberRepository.save(member);
+
+        ShortenUrlForMeRequest request = ShortenUrlForMeRequest.builder()
+                .memberId(member.getId())
+                .fullUrl("www.test.com")
+                .build();
+
+        // when
+        ShortenUrlResponse response = urlService.shortenUrlForMe(request);
 
         // then
         assertThat(response.getHash()).isNotBlank();

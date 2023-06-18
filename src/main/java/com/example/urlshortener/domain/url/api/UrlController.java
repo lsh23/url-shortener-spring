@@ -20,6 +20,11 @@ public class UrlController {
         return ResponseEntity.status(HttpStatus.CREATED).body(urlService.shortenUrl(shortenUrlRequest));
     }
 
+    @PostMapping("/api/me/url")
+    public ResponseEntity<ShortenUrlResponse> shortenUrlForMe(@RequestBody ShortenUrlForMeRequest shortenUrlForMeRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(urlService.shortenUrlForMe(shortenUrlForMeRequest));
+    }
+
     @GetMapping("/{hash}")
     public ResponseEntity<Void> redirect(@PathVariable String hash) throws URISyntaxException {
         return ResponseEntity.status(HttpStatus.SEE_OTHER)

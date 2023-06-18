@@ -63,4 +63,8 @@ public class Url extends BaseTimeEntity {
         }
         return false;
     }
+
+    public void assignMember(Member member) {
+        this.member = member;
+    }
 }
