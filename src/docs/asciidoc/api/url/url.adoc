@@ -28,6 +28,7 @@ include::{snippets}/url-post-logged-in/response-fields.adoc[]
 
 ==== HTTP Request
 include::{snippets}/url-redirect/http-request.adoc[]
+include::{snippets}/url-redirect/path-parameters.adoc[]
 
 ==== HTTP Response
 include::{snippets}/url-redirect/http-response.adoc[]
@@ -39,6 +40,7 @@ include::{snippets}/url-redirect/response-headers.adoc[]
 
 ==== HTTP Request
 include::{snippets}/url-redirect-expired/http-request.adoc[]
+include::{snippets}/url-redirect-expired/path-parameters.adoc[]
 
 ==== HTTP Response
 include::{snippets}/url-redirect-expired/http-response.adoc[]

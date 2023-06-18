@@ -128,7 +128,8 @@ public class UrlAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> extract =
                 given().log().all()
                         .when()
-                        .get("/"+hash)
+                        .pathParam("hash",hash)
+                        .get("/{hash}")
                         .then().log().all()
                         .extract();
 

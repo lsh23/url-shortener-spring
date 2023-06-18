@@ -11,6 +11,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders;
 import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
 
@@ -22,6 +23,7 @@ import static org.springframework.restdocs.headers.HeaderDocumentation.responseH
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -128,11 +130,14 @@ class UrlControllerTest extends ControllerTest {
         given(urlService.redirect("hash")).willReturn(new URI("www.test.com"));
 
         // when
-        ResultActions resultActions = mockMvc.perform(get("/hash"))
+        ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.get("/{hash}", "hash"))
                 .andDo(print())
                 .andDo(document("url-redirect",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("hash").description("hash value of full url")
+                        ),
                         responseHeaders(
                                 headerWithName("Location").description("hash 값에 대응되는 url")
                         )
@@ -151,11 +156,14 @@ class UrlControllerTest extends ControllerTest {
         given(urlService.redirect("hash")).willThrow(new UrlExpiredException());
 
         // when
-        ResultActions resultActions = mockMvc.perform(get("/hash"))
+        ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.get("/{hash}", "hash"))
                 .andDo(print())
                 .andDo(document("url-redirect-expired",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("hash").description("hash value of full url")
+                        ),
                         responseFields(
                                 fieldWithPath("message").type(JsonFieldType.STRING)
                                         .description("오류 메시지"),
