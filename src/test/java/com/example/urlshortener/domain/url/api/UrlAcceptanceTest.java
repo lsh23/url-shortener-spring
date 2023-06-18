@@ -12,6 +12,7 @@ import com.example.urlshortener.domain.url.dao.UrlRepository;
 import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
+import com.example.urlshortener.domain.url.dto.ShortenUrlsResponse;
 import com.example.urlshortener.test.AcceptanceTest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -22,6 +23,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+
+import java.util.List;
 
 import static io.restassured.RestAssured.given;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -137,6 +140,43 @@ public class UrlAcceptanceTest extends AcceptanceTest {
         assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
+    @Test
+    @DisplayName("URL Shorten Url GET API - LIST")
+    void getList() throws Exception {
+        // given
+        requestSignup();
+        BasicLoginResponse basicLoginResponse = requestSignin();
+        Long memberId = basicLoginResponse.getId();
+
+        ShortenUrlForMeRequest request = ShortenUrlForMeRequest.builder()
+                .memberId(memberId)
+                .fullUrl("www.test.com")
+                .build();
+
+
+            given().log().all()
+                    .contentType(MediaType.APPLICATION_JSON_VALUE)
+                    .header("authorization", "Bearer " + basicLoginResponse.getAccessToken())
+                    .body(request)
+                    .when()
+                    .post("/api/me/url")
+                    .then().log().all();
+
+        // when
+        ExtractableResponse<Response> extract = given().log().all()
+                .when()
+                .queryParam("memberId",memberId)
+                .get("/api/url")
+                .then().log().all()
+                .extract();
+
+        ShortenUrlsResponse body = extract.body().as(ShortenUrlsResponse.class);
+        List<ShortenUrlResponse> urls = body.getUrls();
+
+        // then
+        assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(urls.size()).isNotZero();
+    }
 
     private Member requestSignup() {
         final Member member = MemberBuilder.build();

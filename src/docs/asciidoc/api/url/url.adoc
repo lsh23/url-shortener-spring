@@ -46,3 +46,15 @@ include::{snippets}/url-redirect-expired/path-parameters.adoc[]
 include::{snippets}/url-redirect-expired/http-response.adoc[]
 include::{snippets}/url-redirect-expired/response-fields.adoc[]
 
+[[URL-Get-List]]
+=== URL GET - List
+
+==== HTTP Request
+include::{snippets}/url-get/http-request.adoc[]
+include::{snippets}/url-get/query-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-get/http-response.adoc[]
+include::{snippets}/url-get/response-fields.adoc[]
+

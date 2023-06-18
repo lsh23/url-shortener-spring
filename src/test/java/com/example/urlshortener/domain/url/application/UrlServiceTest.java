@@ -7,6 +7,7 @@ import com.example.urlshortener.domain.url.domain.Url;
 import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
+import com.example.urlshortener.domain.url.dto.ShortenUrlsResponse;
 import com.example.urlshortener.domain.url.exception.UrlExpiredException;
 import com.example.urlshortener.test.IntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -108,7 +109,31 @@ class UrlServiceTest extends IntegrationTest {
 
         // when // then
         assertThatThrownBy(()->urlService.redirect(UrlShortener.shortenUrl(url))).isInstanceOf(UrlExpiredException.class);
+    }
+
+    @Test
+    @DisplayName("member id로 url을 조회한다.")
+    void findAllByMemberId() throws URISyntaxException {
+        // given
+        Member member = Member.builder()
+                .email("test@test.com")
+                .build();
+        memberRepository.save(member);
+
+        String url = "www.test.com";
+        Url savedUrl = Url.builder()
+                .fullUrl(url)
+                .hash(UrlShortener.shortenUrl(url))
+                .expiredAt(LocalDateTime.now().minusHours(1))
+                .build();
+        savedUrl.assignMember(member);
+        urlRepository.save(savedUrl);
 
 
+        // when
+        ShortenUrlsResponse response = urlService.findAllByMemberId(member.getId());
+
+        // then
+        assertThat(response.getUrls().size()).isEqualTo(1);
     }
 }

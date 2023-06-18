@@ -4,6 +4,7 @@ import com.example.urlshortener.domain.url.application.UrlService;
 import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
+import com.example.urlshortener.domain.url.dto.ShortenUrlsResponse;
 import com.example.urlshortener.domain.url.exception.UrlExpiredException;
 import com.example.urlshortener.test.ControllerTest;
 import org.junit.jupiter.api.DisplayName;
@@ -16,6 +17,7 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.net.URI;
+import java.util.List;
 
 import static org.mockito.BDDMockito.given;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
@@ -177,6 +179,54 @@ class UrlControllerTest extends ControllerTest {
         // then
         resultActions
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    @DisplayName("로그인이 된 상태에서 short url을 조회하는 요청을 처리한다.")
+    void findShortenUrl() throws Exception {
+        // given
+
+        ShortenUrlResponse shortUrl_1 = ShortenUrlResponse.builder()
+                .fullUrl("www.test.com")
+                .hash("hash")
+                .build();
+
+        ShortenUrlResponse shortUrl_2 = ShortenUrlResponse.builder()
+                .fullUrl("www.test2.com")
+                .hash("hash2")
+                .build();
+
+        ShortenUrlsResponse expected = ShortenUrlsResponse.builder()
+                .urls(List.of(shortUrl_1, shortUrl_2))
+                .build();
+
+        given(urlService.findAllByMemberId(1L)).willReturn(expected);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/api/url")
+                        .param("memberId", "1")
+                        .header("authorization", "Bearer TOKEN")
+                )
+                .andDo(print())
+                .andDo(document("url-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        queryParameters(
+                                parameterWithName("memberId").description("member ID")
+                        ),
+                        responseFields(
+                                fieldWithPath("urls").type(JsonFieldType.ARRAY)
+                                        .description("url list")
+                                ,
+                                fieldWithPath("urls.[].fullUrl").type(JsonFieldType.STRING)
+                                        .description("full URL"),
+                                fieldWithPath("urls.[].hash").type(JsonFieldType.STRING)
+                                        .description("hash result for shorten")
+                        )
+                ));
+
+        // then
+        resultActions.andExpect(status().isOk());
     }
 
 }

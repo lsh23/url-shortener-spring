@@ -7,6 +7,7 @@ import com.example.urlshortener.domain.url.domain.Url;
 import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
 import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
+import com.example.urlshortener.domain.url.dto.ShortenUrlsResponse;
 import com.example.urlshortener.domain.url.exception.HashNotFoundException;
 import com.example.urlshortener.domain.url.exception.UrlExpiredException;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -57,5 +59,11 @@ public class UrlService {
         }
 
         return new URI(url.getFullUrl());
+    }
+
+    public ShortenUrlsResponse findAllByMemberId(Long memberId) {
+        List<Url> all = urlRepository.findAll();
+        List<Url> allByMemberId = urlRepository.findAllByMemberId(memberId);
+        return ShortenUrlsResponse.of(allByMemberId);
     }
 }
