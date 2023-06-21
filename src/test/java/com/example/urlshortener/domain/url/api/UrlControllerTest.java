@@ -257,7 +257,7 @@ class UrlControllerTest extends ControllerTest {
                         ),
                         requestFields(
                                 fieldWithPath("memberId").type(JsonFieldType.NUMBER)
-                                        .description("memberId").optional(),
+                                        .description("memberId"),
                                 fieldWithPath("expireAt").type(JsonFieldType.STRING)
                                         .description("prolong period")
                         )
@@ -298,7 +298,7 @@ class UrlControllerTest extends ControllerTest {
                         ),
                         requestFields(
                                 fieldWithPath("memberId").type(JsonFieldType.NUMBER)
-                                        .description("memberId").optional(),
+                                        .description("memberId"),
                                 fieldWithPath("expireAt").type(JsonFieldType.STRING)
                                         .description("prolong period")
                         ),
