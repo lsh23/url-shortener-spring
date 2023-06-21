@@ -4,12 +4,11 @@ import com.example.urlshortener.domain.member.dao.MemberRepository;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.url.dao.UrlRepository;
 import com.example.urlshortener.domain.url.domain.Url;
-import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
-import com.example.urlshortener.domain.url.dto.ShortenUrlsResponse;
+import com.example.urlshortener.domain.url.dto.*;
 import com.example.urlshortener.domain.url.exception.HashNotFoundException;
 import com.example.urlshortener.domain.url.exception.UrlExpiredException;
+import com.example.urlshortener.domain.url.exception.UrlNotMatchedByMember;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -65,5 +64,17 @@ public class UrlService {
         List<Url> all = urlRepository.findAll();
         List<Url> allByMemberId = urlRepository.findAllByMemberId(memberId);
         return ShortenUrlsResponse.of(allByMemberId);
+    }
+
+    @Transactional
+    public void update(String hash, ShortenUrlUpdateRequest request) {
+
+        Url url = urlRepository.findByHash(hash)
+                .orElseThrow(() -> new HashNotFoundException());
+
+        if (url.getMember().getId() != request.getMemberId()){
+            throw new UrlNotMatchedByMember();
+        }
+        url.extendExpireTime(request.getExpireAt());
     }
 }

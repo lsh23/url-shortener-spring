@@ -9,10 +9,7 @@ import com.example.urlshortener.domain.member.domain.MemberBuilder;
 import com.example.urlshortener.domain.member.dto.SignUpReq;
 import com.example.urlshortener.domain.member.dto.SignUpReqBuilder;
 import com.example.urlshortener.domain.url.dao.UrlRepository;
-import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
-import com.example.urlshortener.domain.url.dto.ShortenUrlsResponse;
+import com.example.urlshortener.domain.url.dto.*;
 import com.example.urlshortener.test.AcceptanceTest;
 import io.restassured.RestAssured;
 import io.restassured.response.ExtractableResponse;
@@ -24,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 import static io.restassured.RestAssured.given;
@@ -39,7 +37,6 @@ public class UrlAcceptanceTest extends AcceptanceTest {
     private MemberRepository memberRepository;
 
 
-
     @Override
     @BeforeEach
     public void setUp() {
@@ -51,7 +48,7 @@ public class UrlAcceptanceTest extends AcceptanceTest {
 
     @Test
     @DisplayName("URL Shorten Post API - 비로그인 상태")
-    void shortenUrl(){
+    void shortenUrl() {
         // given
         ShortenUrlRequest request = ShortenUrlRequest.builder()
                 .fullUrl("www.test.com")
@@ -77,7 +74,7 @@ public class UrlAcceptanceTest extends AcceptanceTest {
 
     @Test
     @DisplayName("URL Shorten Post API - 로그인 상태")
-    void shortenUrlForMe(){
+    void shortenUrlForMe() {
 
         // given
         requestSignup();
@@ -113,7 +110,7 @@ public class UrlAcceptanceTest extends AcceptanceTest {
     void redirect() throws Exception {
         // given
         ShortenUrlRequest request = ShortenUrlRequest.builder()
-                .fullUrl("http://localhost:"+ RestAssured.port+"/actuator/health")
+                .fullUrl("http://localhost:" + RestAssured.port + "/actuator/health")
                 .build();
 
         ExtractableResponse<Response> expected = given().log().all()
@@ -131,7 +128,7 @@ public class UrlAcceptanceTest extends AcceptanceTest {
         ExtractableResponse<Response> extract =
                 given().log().all()
                         .when()
-                        .pathParam("hash",hash)
+                        .pathParam("hash", hash)
                         .get("/{hash}")
                         .then().log().all()
                         .extract();
@@ -154,18 +151,18 @@ public class UrlAcceptanceTest extends AcceptanceTest {
                 .build();
 
 
-            given().log().all()
-                    .contentType(MediaType.APPLICATION_JSON_VALUE)
-                    .header("authorization", "Bearer " + basicLoginResponse.getAccessToken())
-                    .body(request)
-                    .when()
-                    .post("/api/me/url")
-                    .then().log().all();
+        given().log().all()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .header("authorization", "Bearer " + basicLoginResponse.getAccessToken())
+                .body(request)
+                .when()
+                .post("/api/me/url")
+                .then().log().all();
 
         // when
         ExtractableResponse<Response> extract = given().log().all()
                 .when()
-                .queryParam("memberId",memberId)
+                .queryParam("memberId", memberId)
                 .get("/api/url")
                 .then().log().all()
                 .extract();
@@ -177,6 +174,37 @@ public class UrlAcceptanceTest extends AcceptanceTest {
         assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
         assertThat(urls.size()).isNotZero();
     }
+
+    @Test
+    @DisplayName("URL Shorten Url PUT API")
+    void update() throws Exception {
+        // given
+        requestSignup();
+        BasicLoginResponse basicLoginResponse = requestSignin();
+        Long memberId = basicLoginResponse.getId();
+        String accessToken = basicLoginResponse.getAccessToken();
+        ShortenUrlResponse shortenUrlResponse = saveUrl(memberId, accessToken);
+
+        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+                .memberId(memberId)
+                .expireAt(LocalDateTime.now().plusDays(14))
+                .build();
+
+        // when
+        ExtractableResponse<Response> extract = given().log().all()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .header("authorization", "Bearer " + basicLoginResponse.getAccessToken())
+                .body(request)
+                .pathParam("hash", shortenUrlResponse.getHash())
+                .put("/api/me/url/{hash}")
+                .then().log().all()
+                .extract();
+
+        // then
+        assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
+    }
+
 
     private Member requestSignup() {
         final Member member = MemberBuilder.build();
@@ -195,6 +223,7 @@ public class UrlAcceptanceTest extends AcceptanceTest {
 
         return member;
     }
+
     private BasicLoginResponse requestSignin() {
         final Member member = MemberBuilder.build();
         final String email = member.getEmail();
@@ -213,5 +242,25 @@ public class UrlAcceptanceTest extends AcceptanceTest {
                 .extract()
                 .response()
                 .as(BasicLoginResponse.class);
+    }
+
+    private ShortenUrlResponse saveUrl(Long memberId, String accessToken) {
+        ShortenUrlForMeRequest request = ShortenUrlForMeRequest.builder()
+                .memberId(memberId)
+                .fullUrl("www.test.com")
+                .build();
+
+        // when
+        ExtractableResponse<Response> extract =
+                given().log().all()
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .header("authorization", "Bearer " + accessToken)
+                        .body(request)
+                        .when()
+                        .post("/api/me/url")
+                        .then().log().all()
+                        .extract();
+
+        return extract.body().as(ShortenUrlResponse.class);
     }
 }

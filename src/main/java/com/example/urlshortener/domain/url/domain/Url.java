@@ -1,6 +1,7 @@
 package com.example.urlshortener.domain.url.domain;
 
 import com.example.urlshortener.domain.member.domain.Member;
+import com.example.urlshortener.domain.url.exception.InvalidProlongExpirationPeriodException;
 import com.example.urlshortener.global.common.domain.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -57,6 +58,14 @@ public class Url extends BaseTimeEntity {
         return hash;
     }
 
+    public LocalDateTime getExpiredAt(){
+        return expiredAt;
+    }
+
+    public Member getMember(){
+        return member;
+    }
+
     public boolean checkExpired(LocalDateTime now) {
         if (now.isAfter(expiredAt)) {
             return true;
@@ -66,5 +75,12 @@ public class Url extends BaseTimeEntity {
 
     public void assignMember(Member member) {
         this.member = member;
+    }
+
+    public void extendExpireTime(LocalDateTime newExpiredAt) {
+        if (newExpiredAt.isBefore(this.expiredAt)){
+            throw new InvalidProlongExpirationPeriodException(newExpiredAt);
+        }
+        this.expiredAt = newExpiredAt;
     }
 }

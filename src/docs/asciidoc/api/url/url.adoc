@@ -58,3 +58,39 @@ include::{snippets}/url-get/query-parameters.adoc[]
 include::{snippets}/url-get/http-response.adoc[]
 include::{snippets}/url-get/response-fields.adoc[]
 
+
+[[URL-put]]
+=== URL PUT
+
+==== HTTP Request
+include::{snippets}/url-put/http-request.adoc[]
+include::{snippets}/url-put/path-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-put/http-response.adoc[]
+
+[[URL-put-with-invalid-expired-at]]
+=== URL PUT - 유효하지않은 만료날짜
+
+==== HTTP Request
+include::{snippets}/url-put-with-invalid-expired-at/http-request.adoc[]
+include::{snippets}/url-put-with-invalid-expired-at/path-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-put-with-invalid-expired-at/http-response.adoc[]
+include::{snippets}/url-put-with-invalid-expired-at/response-fields.adoc[]
+
+
+[[URL-put-with-invalid-member]]
+=== URL PUT - 유효하지않은 소유권
+
+==== HTTP Request
+include::{snippets}/url-put-with-invalid-member/http-request.adoc[]
+include::{snippets}/url-put-with-invalid-member/path-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-put-with-invalid-member/http-response.adoc[]
+include::{snippets}/url-put-with-invalid-member/response-fields.adoc[]

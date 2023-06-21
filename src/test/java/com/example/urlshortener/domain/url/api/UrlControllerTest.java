@@ -1,11 +1,10 @@
 package com.example.urlshortener.domain.url.api;
 
 import com.example.urlshortener.domain.url.application.UrlService;
-import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
-import com.example.urlshortener.domain.url.dto.ShortenUrlsResponse;
+import com.example.urlshortener.domain.url.dto.*;
+import com.example.urlshortener.domain.url.exception.InvalidProlongExpirationPeriodException;
 import com.example.urlshortener.domain.url.exception.UrlExpiredException;
+import com.example.urlshortener.domain.url.exception.UrlNotMatchedByMember;
 import com.example.urlshortener.test.ControllerTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -17,12 +16,14 @@ import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.test.web.servlet.ResultActions;
 
 import java.net.URI;
+import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.*;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
@@ -229,4 +230,139 @@ class UrlControllerTest extends ControllerTest {
         resultActions.andExpect(status().isOk());
     }
 
+    @Test
+    @DisplayName("short url의 유효기간을 늘린다.")
+    void update() throws Exception {
+        // given
+
+        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+                .memberId(1L)
+                .expireAt(LocalDateTime.of(2023, 6, 1, 0, 0))
+                .build();
+
+        willDoNothing().given(urlService).update("hash", request);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(put("/api/me/url/{hash}", "hash")
+                        .header("authorization", "Bearer TOKEN")
+                        .characterEncoding("utf-8")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andDo(document("url-put",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("hash").description("hash value of full url")
+                        ),
+                        requestFields(
+                                fieldWithPath("memberId").type(JsonFieldType.NUMBER)
+                                        .description("memberId").optional(),
+                                fieldWithPath("expireAt").type(JsonFieldType.STRING)
+                                        .description("prolong period")
+                        )
+                ));
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+    }
+
+    @Test
+    @DisplayName("short url의 유효기간을 기존만료날짜보다 이른만료날짜로 요청하면 예외를 던진다.")
+    void updateWithInvalidExpiredAt() throws Exception {
+        // given
+
+        LocalDateTime expireAt = LocalDateTime.of(2023, 6, 1, 0, 0);
+        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+                .memberId(1L)
+                .expireAt(expireAt)
+                .build();
+
+
+        willThrow(new InvalidProlongExpirationPeriodException(expireAt))
+                .given(urlService).update("hash", request);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(put("/api/me/url/{hash}", "hash")
+                        .header("authorization", "Bearer TOKEN")
+                        .characterEncoding("utf-8")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andDo(document("url-put-with-invalid-expired-at",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("hash").description("hash value of full url")
+                        ),
+                        requestFields(
+                                fieldWithPath("memberId").type(JsonFieldType.NUMBER)
+                                        .description("memberId").optional(),
+                                fieldWithPath("expireAt").type(JsonFieldType.STRING)
+                                        .description("prolong period")
+                        ),
+                        responseFields(
+                                fieldWithPath("message").type(JsonFieldType.STRING)
+                                        .description("오류 메시지"),
+                                fieldWithPath("code").type(JsonFieldType.STRING)
+                                        .description("Application error code"),
+                                fieldWithPath("status").type(JsonFieldType.NUMBER)
+                                        .description("http status")
+                        )
+                ));
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    @DisplayName("소유하지 않은 short url의 유효기간을 수정하려고하면 예외를 던진다.")
+    void updateWithInvalidMemberId() throws Exception {
+        // given
+
+        LocalDateTime expireAt = LocalDateTime.of(2023, 6, 1, 0, 0);
+        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+                .memberId(1L)
+                .expireAt(expireAt)
+                .build();
+
+
+        willThrow(new UrlNotMatchedByMember())
+                .given(urlService).update("hash", request);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(put("/api/me/url/{hash}", "hash")
+                        .header("authorization", "Bearer TOKEN")
+                        .characterEncoding("utf-8")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andDo(document("url-put-with-invalid-member",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("hash").description("hash value of full url")
+                        ),
+                        requestFields(
+                                fieldWithPath("memberId").type(JsonFieldType.NUMBER)
+                                        .description("memberId").optional(),
+                                fieldWithPath("expireAt").type(JsonFieldType.STRING)
+                                        .description("prolong period")
+                        ),
+                        responseFields(
+                                fieldWithPath("message").type(JsonFieldType.STRING)
+                                        .description("오류 메시지"),
+                                fieldWithPath("code").type(JsonFieldType.STRING)
+                                        .description("Application error code"),
+                                fieldWithPath("status").type(JsonFieldType.NUMBER)
+                                        .description("http status")
+                        )
+                ));
+
+        // then
+        resultActions.andExpect(status().isBadRequest());
+
+    }
 }

@@ -4,10 +4,7 @@ import com.example.urlshortener.domain.member.dao.MemberRepository;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.url.dao.UrlRepository;
 import com.example.urlshortener.domain.url.domain.Url;
-import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
-import com.example.urlshortener.domain.url.dto.ShortenUrlsResponse;
+import com.example.urlshortener.domain.url.dto.*;
 import com.example.urlshortener.domain.url.exception.UrlExpiredException;
 import com.example.urlshortener.test.IntegrationTest;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +39,7 @@ class UrlServiceTest extends IntegrationTest {
 
     @Test
     @DisplayName("full url을 가지고 hash값을 생성하고 저장한다.")
-    void shortenUrl(){
+    void shortenUrl() {
         // given
         ShortenUrlRequest request = ShortenUrlRequest.builder()
                 .fullUrl("www.test.com")
@@ -57,7 +54,7 @@ class UrlServiceTest extends IntegrationTest {
 
     @Test
     @DisplayName("full url와 memberId을 가지고 hash값을 생성하고 저장한다.")
-    void shortenUrlForMe(){
+    void shortenUrlForMe() {
         // given
         Member member = Member.builder()
                 .email("test@test.com")
@@ -108,7 +105,7 @@ class UrlServiceTest extends IntegrationTest {
         urlRepository.save(savedUrl);
 
         // when // then
-        assertThatThrownBy(()->urlService.redirect(UrlShortener.shortenUrl(url))).isInstanceOf(UrlExpiredException.class);
+        assertThatThrownBy(() -> urlService.redirect(UrlShortener.shortenUrl(url))).isInstanceOf(UrlExpiredException.class);
     }
 
     @Test
@@ -136,4 +133,38 @@ class UrlServiceTest extends IntegrationTest {
         // then
         assertThat(response.getUrls().size()).isEqualTo(1);
     }
+
+    @Test
+    @DisplayName("url의 만료기간을 연장한다.")
+    void prolongShortUrlExpiration() {
+        // given
+        Member member = Member.builder()
+                .email("test@test.com")
+                .build();
+        memberRepository.save(member);
+
+        String url = "www.test.com";
+        String hash = UrlShortener.shortenUrl(url);
+        LocalDateTime expireAt = LocalDateTime.of(2023,6,1,0,0);
+        Url savedUrl = Url.builder()
+                .fullUrl(url)
+                .hash(hash)
+                .expiredAt(expireAt)
+                .build();
+        savedUrl.assignMember(member);
+        urlRepository.save(savedUrl);
+
+        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+                .memberId(member.getId())
+                .expireAt(expireAt.plusDays(7))
+                .build();
+
+        // when
+        urlService.update(hash, request);
+
+        // then
+        Url actual = urlRepository.findByHash(hash).get();
+        assertThat(actual.getExpiredAt()).isEqualTo(expireAt.plusDays(7));
+    }
+
 }

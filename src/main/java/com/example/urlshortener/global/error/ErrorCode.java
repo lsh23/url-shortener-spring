@@ -28,7 +28,10 @@ public enum ErrorCode {
 
     // URL
     INVALID_HASH(400, "U001", "hash 값에 대응 되는 URL이 존재하지 않습니다."),
-    EXPIRED_URL(400, "U002", "해당 url은 만료된 url입니다.");
+    EXPIRED_URL(400, "U002", "해당 url은 만료된 url입니다."),
+
+    INVALID_PROLONG_EXPIRATION_PERIOD(400,"U003" ,"유효하지 않은 연장 기간입니다." ),
+    URL_NOT_MATCHED_BY_MEMBER(400, "U004", "해당 url의 소유자가 아닙니다.");
 
     private int status;
     private final String code;

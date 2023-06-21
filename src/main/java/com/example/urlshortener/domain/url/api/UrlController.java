@@ -1,10 +1,7 @@
 package com.example.urlshortener.domain.url.api;
 
 import com.example.urlshortener.domain.url.application.UrlService;
-import com.example.urlshortener.domain.url.dto.ShortenUrlForMeRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlRequest;
-import com.example.urlshortener.domain.url.dto.ShortenUrlResponse;
-import com.example.urlshortener.domain.url.dto.ShortenUrlsResponse;
+import com.example.urlshortener.domain.url.dto.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +22,12 @@ public class UrlController {
     @GetMapping("/api/url")
     public ResponseEntity<ShortenUrlsResponse> findShortenUrl(@RequestParam Long memberId) {
         return ResponseEntity.ok(urlService.findAllByMemberId(memberId));
+    }
+
+    @PutMapping("/api/me/url/{hash}")
+    public ResponseEntity<Void> update(@PathVariable String hash, @RequestBody ShortenUrlUpdateRequest request) {
+        urlService.update(hash, request);
+        return ResponseEntity.ok().build();
     }
 
     @PostMapping("/api/me/url")
