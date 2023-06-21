@@ -83,4 +83,8 @@ public class Url extends BaseTimeEntity {
         }
         this.expiredAt = newExpiredAt;
     }
+
+    public void expire(LocalDateTime now) {
+        this.expiredAt = now;
+    }
 }

@@ -54,8 +54,25 @@ class UrlTest {
                 .build();
 
         // when & then
-        assertThatThrownBy( () -> url.extendExpireTime(expiredAt.minusDays(7)))
+        assertThatThrownBy(() -> url.extendExpireTime(expiredAt.minusDays(7)))
                 .isInstanceOf(InvalidProlongExpirationPeriodException.class);
+    }
+
+    @Test
+    @DisplayName("url의 만료시간을 현재시간으로 수정해서 만료시킨다.")
+    void expire() {
+        // given
+        LocalDateTime expiredAt = LocalDateTime.of(2023, 6, 1, 0, 0);
+        Url url = Url.builder().expiredAt(expiredAt)
+                .build();
+
+        // when
+        LocalDateTime now = LocalDateTime.now();
+        url.expire(now);
+
+        // then
+        assertThat(url.getExpiredAt()).isEqualTo(now);
+
     }
 
 

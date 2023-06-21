@@ -77,4 +77,15 @@ public class UrlService {
         }
         url.extendExpireTime(request.getExpireAt());
     }
+
+    @Transactional
+    public void expire(String hash, ShortenUrlUpdateRequest request) {
+        Url url = urlRepository.findByHash(hash)
+                .orElseThrow(() -> new HashNotFoundException());
+
+        if (url.getMember().getId() != request.getMemberId()){
+            throw new UrlNotMatchedByMember();
+        }
+        url.expire(request.getExpireAt());
+    }
 }

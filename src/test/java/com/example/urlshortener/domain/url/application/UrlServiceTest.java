@@ -167,4 +167,38 @@ class UrlServiceTest extends IntegrationTest {
         assertThat(actual.getExpiredAt()).isEqualTo(expireAt.plusDays(7));
     }
 
+    @Test
+    @DisplayName("url의 만료시각을 현재시간으로 만든다.")
+    void expire() {
+        // given
+        Member member = Member.builder()
+                .email("test@test.com")
+                .build();
+        memberRepository.save(member);
+
+        String url = "www.test.com";
+        String hash = UrlShortener.shortenUrl(url);
+        LocalDateTime expireAt = LocalDateTime.of(2023,6,1,0,0);
+        Url savedUrl = Url.builder()
+                .fullUrl(url)
+                .hash(hash)
+                .expiredAt(expireAt)
+                .build();
+        savedUrl.assignMember(member);
+        urlRepository.save(savedUrl);
+
+        LocalDateTime now = LocalDateTime.of(2023, 6, 7, 0, 0);
+        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+                .memberId(member.getId())
+                .expireAt(now)
+                .build();
+
+        // when
+        urlService.expire(hash, request);
+
+        // then
+        Url actual = urlRepository.findByHash(hash).get();
+        assertThat(actual.getExpiredAt()).isEqualTo(now);
+    }
+
 }

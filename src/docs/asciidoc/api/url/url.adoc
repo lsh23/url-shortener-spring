@@ -94,3 +94,16 @@ include::{snippets}/url-put-with-invalid-member/path-parameters.adoc[]
 ==== HTTP Response
 include::{snippets}/url-put-with-invalid-member/http-response.adoc[]
 include::{snippets}/url-put-with-invalid-member/response-fields.adoc[]
+
+[[URL-expire]]
+=== URL Expire
+
+==== HTTP Request
+include::{snippets}/url-expire/http-request.adoc[]
+include::{snippets}/url-expire/path-parameters.adoc[]
+include::{snippets}/url-expire/request-fields.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-expire/http-response.adoc[]
+include::{snippets}/url-expire/response-fields.adoc[]

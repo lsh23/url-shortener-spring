@@ -205,6 +205,34 @@ public class UrlAcceptanceTest extends AcceptanceTest {
         assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
     }
 
+    @Test
+    @DisplayName("URL Shorten Url Expire API")
+    void expire() throws Exception {
+        // given
+        requestSignup();
+        BasicLoginResponse basicLoginResponse = requestSignin();
+        Long memberId = basicLoginResponse.getId();
+        String accessToken = basicLoginResponse.getAccessToken();
+        ShortenUrlResponse shortenUrlResponse = saveUrl(memberId, accessToken);
+
+        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+                .memberId(memberId)
+                .build();
+
+        // when
+        ExtractableResponse<Response> extract = given().log().all()
+                .when()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .header("authorization", "Bearer " + basicLoginResponse.getAccessToken())
+                .body(request)
+                .pathParam("hash", shortenUrlResponse.getHash())
+                .post("/api/me/url/{hash}/expire")
+                .then().log().all()
+                .extract();
+
+        // then
+        assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
+    }
 
     private Member requestSignup() {
         final Member member = MemberBuilder.build();

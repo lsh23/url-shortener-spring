@@ -30,6 +30,12 @@ public class UrlController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/api/me/url/{hash}/expire")
+    public ResponseEntity<Void> expire(@PathVariable String hash, @RequestBody ShortenUrlUpdateRequest request) {
+        urlService.expire(hash, request);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/api/me/url")
     public ResponseEntity<ShortenUrlResponse> shortenUrlForMe(@RequestBody ShortenUrlForMeRequest shortenUrlForMeRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(urlService.shortenUrlForMe(shortenUrlForMeRequest));

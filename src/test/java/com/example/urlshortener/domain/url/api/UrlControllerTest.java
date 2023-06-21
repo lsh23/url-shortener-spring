@@ -23,12 +23,10 @@ import static org.mockito.BDDMockito.*;
 import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
 import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
-import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.put;
+import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.request.RequestDocumentation.*;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -363,6 +361,43 @@ class UrlControllerTest extends ControllerTest {
 
         // then
         resultActions.andExpect(status().isBadRequest());
+
+    }
+
+    @Test
+    @DisplayName("소유하지 않은 short url의 유효기간을 수정하려고하면 예외를 던진다.")
+    void expire() throws Exception {
+        // given
+        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+                .memberId(1L)
+                .build();
+
+        willDoNothing().given(urlService).expire("hash", request);
+
+
+        // when
+        ResultActions resultActions = mockMvc.perform(post("/api/me/url/{hash}/expire", "hash")
+                        .header("authorization", "Bearer TOKEN")
+                        .characterEncoding("utf-8")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andDo(document("url-expire",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        pathParameters(
+                                parameterWithName("hash").description("hash value of full url")
+                        ),
+                        requestFields(
+                                fieldWithPath("memberId").type(JsonFieldType.NUMBER)
+                                        .description("memberId"),
+                                fieldWithPath("expireAt").type(JsonFieldType.STRING)
+                                        .description("prolong period")
+                        )
+                ));
+
+        // then
+        resultActions.andExpect(status().isOk());
 
     }
 }
