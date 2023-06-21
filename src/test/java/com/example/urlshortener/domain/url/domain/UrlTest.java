@@ -1,6 +1,8 @@
 package com.example.urlshortener.domain.url.domain;
 
+import com.example.urlshortener.domain.url.exception.InvalidProlongExpirationPeriodException;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -9,6 +11,7 @@ import java.time.LocalDateTime;
 import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class UrlTest {
 
@@ -27,7 +30,53 @@ class UrlTest {
         assertThat(expired).isEqualTo(expected);
     }
 
-    private static Stream<Arguments> provideLocalDateTimesForCheckExpired(){
+    @Test
+    @DisplayName("원하는 날짜로 url의 만료날짜를 지정한다.")
+    void extendExpireTime() {
+        // given
+        LocalDateTime expiredAt = LocalDateTime.of(2023, 6, 1, 0, 0);
+        Url url = Url.builder().expiredAt(expiredAt)
+                .build();
+
+        // when
+        url.extendExpireTime(expiredAt.plusDays(7));
+
+        // then
+        assertThat(url.getExpiredAt()).isEqualTo(LocalDateTime.of(2023, 6, 8, 0, 0));
+    }
+
+    @Test
+    @DisplayName("기존 만료날짜보다 이전시간으로 만료날짜로 지정하면, 에러를 던진다.")
+    void extendExpireTimeWithInvalidExpiredAt() {
+        // given
+        LocalDateTime expiredAt = LocalDateTime.of(2023, 6, 1, 0, 0);
+        Url url = Url.builder().expiredAt(expiredAt)
+                .build();
+
+        // when & then
+        assertThatThrownBy(() -> url.extendExpireTime(expiredAt.minusDays(7)))
+                .isInstanceOf(InvalidProlongExpirationPeriodException.class);
+    }
+
+    @Test
+    @DisplayName("url의 만료시간을 현재시간으로 수정해서 만료시킨다.")
+    void expire() {
+        // given
+        LocalDateTime expiredAt = LocalDateTime.of(2023, 6, 1, 0, 0);
+        Url url = Url.builder().expiredAt(expiredAt)
+                .build();
+
+        // when
+        LocalDateTime now = LocalDateTime.now();
+        url.expire(now);
+
+        // then
+        assertThat(url.getExpiredAt()).isEqualTo(now);
+
+    }
+
+
+    private static Stream<Arguments> provideLocalDateTimesForCheckExpired() {
         return Stream.of(
                 Arguments.of(LocalDateTime.of(2023, 5, 30, 0, 0), false),
                 Arguments.of(LocalDateTime.of(2023, 5, 29, 23, 59), false),

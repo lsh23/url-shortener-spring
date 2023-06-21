@@ -39,6 +39,7 @@ class AuthControllerTest extends ControllerTest {
                 .build();
 
         BasicLoginResponse expected = BasicLoginResponse.builder()
+                .id(1L)
                 .email("solver@test.com")
                 .accessToken("TOKEN")
                 .refreshToken("REFRESH_TOKEN")
@@ -62,6 +63,8 @@ class AuthControllerTest extends ControllerTest {
                                         .description("password")
                         ),
                         responseFields(
+                                fieldWithPath("id").type(JsonFieldType.NUMBER)
+                                        .description("id"),
                                 fieldWithPath("email").type(JsonFieldType.STRING)
                                         .description("email(ID)"),
                                 fieldWithPath("accessToken").type(JsonFieldType.STRING)
@@ -81,6 +84,7 @@ class AuthControllerTest extends ControllerTest {
         // given
 
         OAuthLoginResponse expected = OAuthLoginResponse.builder()
+                .id(1L)
                 .email("solver@test.com")
                 .accessToken("TOKEN")
                 .refreshToken("REFRESH_TOKEN")
@@ -101,6 +105,8 @@ class AuthControllerTest extends ControllerTest {
                                 parameterWithName("provider").description("OAuth Provider e.g. github, ... "),
                                 parameterWithName("code").description("Authorization code from OAuth Provider")),
                         responseFields(
+                                fieldWithPath("id").type(JsonFieldType.NUMBER)
+                                        .description("id"),
                                 fieldWithPath("email").type(JsonFieldType.STRING)
                                         .description("email(ID)"),
                                 fieldWithPath("accessToken").type(JsonFieldType.STRING)

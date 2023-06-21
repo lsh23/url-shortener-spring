@@ -12,11 +12,23 @@ include::{snippets}/url-post/request-fields.adoc[]
 include::{snippets}/url-post/http-response.adoc[]
 include::{snippets}/url-post/response-fields.adoc[]
 
+[[URL-Post-logged-in]]
+=== URL Post - Logged in
+
+==== HTTP Request
+include::{snippets}/url-post-logged-in/http-request.adoc[]
+include::{snippets}/url-post-logged-in/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/url-post-logged-in/http-response.adoc[]
+include::{snippets}/url-post-logged-in/response-fields.adoc[]
+
 [[URL-redirect]]
 === URL redirect
 
 ==== HTTP Request
 include::{snippets}/url-redirect/http-request.adoc[]
+include::{snippets}/url-redirect/path-parameters.adoc[]
 
 ==== HTTP Response
 include::{snippets}/url-redirect/http-response.adoc[]
@@ -28,8 +40,82 @@ include::{snippets}/url-redirect/response-headers.adoc[]
 
 ==== HTTP Request
 include::{snippets}/url-redirect-expired/http-request.adoc[]
+include::{snippets}/url-redirect-expired/path-parameters.adoc[]
 
 ==== HTTP Response
 include::{snippets}/url-redirect-expired/http-response.adoc[]
 include::{snippets}/url-redirect-expired/response-fields.adoc[]
 
+[[URL-Get-List]]
+=== URL GET - List
+
+==== HTTP Request
+include::{snippets}/url-get/http-request.adoc[]
+include::{snippets}/url-get/query-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-get/http-response.adoc[]
+include::{snippets}/url-get/response-fields.adoc[]
+
+
+[[URL-put]]
+=== URL PUT
+
+==== HTTP Request
+include::{snippets}/url-put/http-request.adoc[]
+include::{snippets}/url-put/path-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-put/http-response.adoc[]
+
+[[URL-put-with-invalid-expired-at]]
+=== URL PUT - 유효하지않은 만료날짜
+
+==== HTTP Request
+include::{snippets}/url-put-with-invalid-expired-at/http-request.adoc[]
+include::{snippets}/url-put-with-invalid-expired-at/path-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-put-with-invalid-expired-at/http-response.adoc[]
+include::{snippets}/url-put-with-invalid-expired-at/response-fields.adoc[]
+
+
+[[URL-put-with-invalid-member]]
+=== URL PUT - 유효하지않은 소유권
+
+==== HTTP Request
+include::{snippets}/url-put-with-invalid-member/http-request.adoc[]
+include::{snippets}/url-put-with-invalid-member/path-parameters.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-put-with-invalid-member/http-response.adoc[]
+include::{snippets}/url-put-with-invalid-member/response-fields.adoc[]
+
+[[URL-expire]]
+=== URL Expire
+
+==== HTTP Request
+include::{snippets}/url-expire/http-request.adoc[]
+include::{snippets}/url-expire/path-parameters.adoc[]
+include::{snippets}/url-expire/request-fields.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-expire/http-response.adoc[]
+include::{snippets}/url-expire/response-fields.adoc[]
+
+[[URL-delete]]
+=== URL Delete
+
+==== HTTP Request
+include::{snippets}/url-delete/http-request.adoc[]
+include::{snippets}/url-delete/path-parameters.adoc[]
+include::{snippets}/url-delete/request-fields.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-delete/http-response.adoc[]
