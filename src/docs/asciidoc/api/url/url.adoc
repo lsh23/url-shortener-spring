@@ -107,3 +107,15 @@ include::{snippets}/url-expire/request-fields.adoc[]
 ==== HTTP Response
 include::{snippets}/url-expire/http-response.adoc[]
 include::{snippets}/url-expire/response-fields.adoc[]
+
+[[URL-delete]]
+=== URL Delete
+
+==== HTTP Request
+include::{snippets}/url-delete/http-request.adoc[]
+include::{snippets}/url-delete/path-parameters.adoc[]
+include::{snippets}/url-delete/request-fields.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-delete/http-response.adoc[]

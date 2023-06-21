@@ -88,4 +88,15 @@ public class UrlService {
         }
         url.expire(request.getExpireAt());
     }
+
+    @Transactional
+    public void delete(String hash, ShortenUrlDeleteRequest request) {
+        Url url = urlRepository.findByHash(hash)
+                .orElseThrow(() -> new HashNotFoundException());
+
+        if (url.getMember().getId() != request.getMemberId()){
+            throw new UrlNotMatchedByMember();
+        }
+        urlRepository.delete(url);
+    }
 }

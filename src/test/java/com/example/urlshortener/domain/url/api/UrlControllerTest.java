@@ -363,26 +363,24 @@ class UrlControllerTest extends ControllerTest {
         resultActions.andExpect(status().isBadRequest());
 
     }
-
     @Test
-    @DisplayName("소유하지 않은 short url의 유효기간을 수정하려고하면 예외를 던진다.")
-    void expire() throws Exception {
+    @DisplayName("hash값에 해당하는 url을 삭제한다.")
+    void deleteUrl() throws Exception {
         // given
-        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+        ShortenUrlDeleteRequest request = ShortenUrlDeleteRequest.builder()
                 .memberId(1L)
                 .build();
 
-        willDoNothing().given(urlService).expire("hash", request);
-
+        willDoNothing().given(urlService).delete("hash", request);
 
         // when
-        ResultActions resultActions = mockMvc.perform(post("/api/me/url/{hash}/expire", "hash")
+        ResultActions resultActions = mockMvc.perform(delete("/api/me/url/{hash}", "hash")
                         .header("authorization", "Bearer TOKEN")
                         .characterEncoding("utf-8")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andDo(document("url-expire",
+                .andDo(document("url-delete",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         pathParameters(
@@ -390,9 +388,7 @@ class UrlControllerTest extends ControllerTest {
                         ),
                         requestFields(
                                 fieldWithPath("memberId").type(JsonFieldType.NUMBER)
-                                        .description("memberId"),
-                                fieldWithPath("expireAt").type(JsonFieldType.STRING)
-                                        .description("prolong period")
+                                        .description("memberId")
                         )
                 ));
 

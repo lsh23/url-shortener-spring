@@ -36,6 +36,12 @@ public class UrlController {
         return ResponseEntity.ok().build();
     }
 
+    @DeleteMapping("/api/me/url/{hash}")
+    public ResponseEntity<Void> delete(@PathVariable String hash, @RequestBody ShortenUrlDeleteRequest request) {
+        urlService.delete(hash, request);
+        return ResponseEntity.ok().build();
+    }
+
     @PostMapping("/api/me/url")
     public ResponseEntity<ShortenUrlResponse> shortenUrlForMe(@RequestBody ShortenUrlForMeRequest shortenUrlForMeRequest) {
         return ResponseEntity.status(HttpStatus.CREATED).body(urlService.shortenUrlForMe(shortenUrlForMeRequest));

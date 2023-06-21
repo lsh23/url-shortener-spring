@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
+import java.util.NoSuchElementException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -200,5 +201,37 @@ class UrlServiceTest extends IntegrationTest {
         Url actual = urlRepository.findByHash(hash).get();
         assertThat(actual.getExpiredAt()).isEqualTo(now);
     }
+
+    @Test
+    @DisplayName("url을 삭제한다.")
+    void delete() {
+        // given
+        Member member = Member.builder()
+                .email("test@test.com")
+                .build();
+        memberRepository.save(member);
+
+        String url = "www.test.com";
+        String hash = UrlShortener.shortenUrl(url);
+        LocalDateTime expireAt = LocalDateTime.of(2023,6,1,0,0);
+        Url savedUrl = Url.builder()
+                .fullUrl(url)
+                .hash(hash)
+                .expiredAt(expireAt)
+                .build();
+        savedUrl.assignMember(member);
+        urlRepository.save(savedUrl);
+
+        ShortenUrlDeleteRequest request = ShortenUrlDeleteRequest.builder()
+                .memberId(member.getId())
+                .build();
+
+        // when
+        urlService.delete(hash, request);
+
+        // then
+        assertThatThrownBy(()->urlRepository.findByHash(hash).orElseThrow()).isInstanceOf(NoSuchElementException.class);
+    }
+
 
 }
