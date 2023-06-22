@@ -19,7 +19,7 @@ public class UrlController {
         return ResponseEntity.status(HttpStatus.CREATED).body(urlService.shortenUrl(shortenUrlRequest));
     }
 
-    @GetMapping("/api/url")
+    @GetMapping("/api/me/url")
     public ResponseEntity<ShortenUrlsResponse> findShortenUrl(@RequestParam Long memberId) {
         return ResponseEntity.ok(urlService.findAllByMemberId(memberId));
     }

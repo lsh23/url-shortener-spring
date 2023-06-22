@@ -161,9 +161,10 @@ public class UrlAcceptanceTest extends AcceptanceTest {
 
         // when
         ExtractableResponse<Response> extract = given().log().all()
+                .header("authorization", "Bearer " + basicLoginResponse.getAccessToken())
                 .when()
                 .queryParam("memberId", memberId)
-                .get("/api/url")
+                .get("/api/me/url")
                 .then().log().all()
                 .extract();
 

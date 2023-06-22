@@ -202,7 +202,7 @@ class UrlControllerTest extends ControllerTest {
         given(urlService.findAllByMemberId(1L)).willReturn(expected);
 
         // when
-        ResultActions resultActions = mockMvc.perform(get("/api/url")
+        ResultActions resultActions = mockMvc.perform(get("/api/me/url")
                         .param("memberId", "1")
                         .header("authorization", "Bearer TOKEN")
                 )
