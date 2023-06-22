@@ -1,8 +1,12 @@
 package com.example.urlshortener.domain.auth.application;
 
 import com.example.urlshortener.domain.auth.dao.RefreshTokenRepository;
+import com.example.urlshortener.domain.auth.dao.SessionRepository;
 import com.example.urlshortener.domain.auth.domain.RefreshToken;
+import com.example.urlshortener.domain.auth.domain.Session;
 import com.example.urlshortener.domain.auth.dto.*;
+import com.example.urlshortener.domain.auth.exception.AlreadySessionExist;
+import com.example.urlshortener.domain.auth.exception.DuplicatedSessionUUID;
 import com.example.urlshortener.domain.auth.exception.InvalidRefreshToken;
 import com.example.urlshortener.domain.auth.exception.TokenNotMatchedByEmail;
 import com.example.urlshortener.domain.member.dao.MemberRepository;
@@ -22,6 +26,7 @@ import java.util.Map;
 public class AuthService {
     private final MemberRepository memberRepository;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final SessionRepository sessionRepository;
     private final PasswordEncoder passwordEncoder;
 
     private final OauthHandler oauthHandler;
@@ -100,5 +105,20 @@ public class AuthService {
         String accessToken = issueToken(email);
 
         return RefreshAuthResponse.of(accessToken);
+    }
+
+    @Transactional
+    public SessionDto makeSession(String oldSessionId, String newSessionId) {
+        if (oldSessionId != null) {
+            throw new AlreadySessionExist();
+        }
+        if (sessionRepository.existsByUuid(newSessionId)) {
+            throw new DuplicatedSessionUUID();
+        }
+        Session session = new Session();
+        session.assignUUID(newSessionId);
+        sessionRepository.save(session);
+        return SessionDto.of(session);
+
     }
 }

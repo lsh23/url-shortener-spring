@@ -1,7 +1,10 @@
 package com.example.urlshortener.domain.auth.application;
 
 import com.example.urlshortener.domain.auth.dao.RefreshTokenRepository;
+import com.example.urlshortener.domain.auth.dao.SessionRepository;
 import com.example.urlshortener.domain.auth.dto.*;
+import com.example.urlshortener.domain.auth.exception.AlreadySessionExist;
+import com.example.urlshortener.domain.auth.exception.DuplicatedSessionUUID;
 import com.example.urlshortener.domain.auth.exception.InvalidRefreshToken;
 import com.example.urlshortener.domain.auth.exception.TokenNotMatchedByEmail;
 import com.example.urlshortener.domain.member.dao.MemberRepository;
@@ -30,6 +33,8 @@ class AuthServiceTest extends IntegrationTest {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
     @Autowired
+    private SessionRepository sessionRepository;
+    @Autowired
     private PasswordEncoder passwordEncoder;
     private Member member;
 
@@ -38,6 +43,7 @@ class AuthServiceTest extends IntegrationTest {
         member = MemberBuilder.build();
         memberRepository.deleteAllInBatch();
         refreshTokenRepository.deleteAll();
+//        sessionRepository.deleteAllInBatch();
     }
 
     @MockBean
@@ -161,7 +167,7 @@ class AuthServiceTest extends IntegrationTest {
                 .build();
 
         // when then
-        assertThatThrownBy(()->authService.refreshAuth(request)).isInstanceOf(InvalidRefreshToken.class);
+        assertThatThrownBy(() -> authService.refreshAuth(request)).isInstanceOf(InvalidRefreshToken.class);
     }
 
     @Test
@@ -174,6 +180,35 @@ class AuthServiceTest extends IntegrationTest {
                 .build();
 
         // when then
-        assertThatThrownBy(()->authService.refreshAuth(request)).isInstanceOf(TokenNotMatchedByEmail.class);
+        assertThatThrownBy(() -> authService.refreshAuth(request)).isInstanceOf(TokenNotMatchedByEmail.class);
+    }
+
+    @Test
+    @DisplayName("session을 생성한다.")
+    public void session() {
+        // when
+        SessionDto sessionDto = authService.makeSession(null, "NEW_UUID");
+        // then
+        assertThat(sessionDto.getUuid()).isNotBlank();
+    }
+
+    @Test
+    @DisplayName("세션이 존재하는 상황에서, session을 생성하면 에러를 던진다.")
+    public void sessionWithNotNullId() {
+        // when && then
+        assertThatThrownBy(()-> authService.makeSession("OLD_UUID","NEW_UUID"))
+                .isInstanceOf(AlreadySessionExist.class);
+    }
+
+
+    @Test
+    @DisplayName("sessionId가 중복되면 에러를 던진다.")
+    public void sessionWithDuplicatedId() {
+        // given
+        authService.makeSession(null,"DUPLICATED_UUID");
+
+        // when && then
+        assertThatThrownBy(()-> authService.makeSession(null,"DUPLICATED_UUID"))
+                .isInstanceOf(DuplicatedSessionUUID.class);
     }
 }

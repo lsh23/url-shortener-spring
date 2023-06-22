@@ -2,7 +2,11 @@ package com.example.urlshortener.domain.auth.api;
 
 import com.example.urlshortener.domain.auth.application.OauthHandler;
 import com.example.urlshortener.domain.auth.dao.RefreshTokenRepository;
-import com.example.urlshortener.domain.auth.dto.*;
+import com.example.urlshortener.domain.auth.dao.SessionRepository;
+import com.example.urlshortener.domain.auth.dto.BasicLoginResponse;
+import com.example.urlshortener.domain.auth.dto.OauthUserInformation;
+import com.example.urlshortener.domain.auth.dto.RefreshAuthRequest;
+import com.example.urlshortener.domain.auth.dto.SignInReq;
 import com.example.urlshortener.domain.member.dao.MemberRepository;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.member.domain.MemberBuilder;
@@ -31,12 +35,16 @@ public class AuthAcceptanceTest extends AcceptanceTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private SessionRepository sessionRepository;
+
     @Override
     @BeforeEach
     public void setUp() {
         super.setUp();
         refreshTokenRepository.deleteAll();
         memberRepository.deleteAllInBatch();
+        sessionRepository.deleteAllInBatch();
     }
 
     @MockBean
@@ -121,6 +129,44 @@ public class AuthAcceptanceTest extends AcceptanceTest {
 
         // then
         assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
+
+    }
+
+    @Test
+    @DisplayName("Cookie API")
+    void cookie() {
+        // given
+
+        // when
+        ExtractableResponse<Response> extract =
+                given().log().all()
+                        .when()
+                        .get("/api/auth/set-cookie")
+                        .then().log().all()
+                        .extract();
+
+        // then
+        assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(extract.cookie("sessionId")).isNotBlank();
+
+    }
+
+    @Test
+    @DisplayName("Cookie API - With Already Session Exist")
+    void cookieWithAlreadySessionExist() {
+        // given
+
+        // when
+        ExtractableResponse<Response> extract =
+                given().log().all()
+                        .when()
+                        .cookie("sessionId","uuid")
+                        .get("/api/auth/set-cookie")
+                        .then().log().all()
+                        .extract();
+
+        // then
+        assertThat(extract.statusCode()).isEqualTo(HttpStatus.BAD_REQUEST.value());
 
     }
 
