@@ -1,28 +1,6 @@
 [[URL-API]]
 == URL API
 
-[[URL-Post]]
-=== URL Post
-
-==== HTTP Request
-include::{snippets}/url-post/http-request.adoc[]
-include::{snippets}/url-post/request-fields.adoc[]
-
-==== HTTP Response
-include::{snippets}/url-post/http-response.adoc[]
-include::{snippets}/url-post/response-fields.adoc[]
-
-[[URL-Post-logged-in]]
-=== URL Post - Logged in
-
-==== HTTP Request
-include::{snippets}/url-post-logged-in/http-request.adoc[]
-include::{snippets}/url-post-logged-in/request-fields.adoc[]
-
-==== HTTP Response
-include::{snippets}/url-post-logged-in/http-response.adoc[]
-include::{snippets}/url-post-logged-in/response-fields.adoc[]
-
 [[URL-redirect]]
 === URL redirect
 
@@ -34,88 +12,118 @@ include::{snippets}/url-redirect/path-parameters.adoc[]
 include::{snippets}/url-redirect/http-response.adoc[]
 include::{snippets}/url-redirect/response-headers.adoc[]
 
-
 [[URL-redirect-expired]]
 === URL redirect - 만료된 url 요청
 
 ==== HTTP Request
-include::{snippets}/url-redirect-expired/http-request.adoc[]
-include::{snippets}/url-redirect-expired/path-parameters.adoc[]
+include::{snippets}/url-redirect-with-expired/http-request.adoc[]
+include::{snippets}/url-redirect-with-expired/path-parameters.adoc[]
 
 ==== HTTP Response
-include::{snippets}/url-redirect-expired/http-response.adoc[]
-include::{snippets}/url-redirect-expired/response-fields.adoc[]
+include::{snippets}/url-redirect-with-expired/http-response.adoc[]
+include::{snippets}/url-redirect-with-expired/response-fields.adoc[]
 
-[[URL-Get-List]]
-=== URL GET - List
+
+[[URL-Post]]
+=== URL Post - 비로그인 상태
 
 ==== HTTP Request
-include::{snippets}/url-get/http-request.adoc[]
-include::{snippets}/url-get/query-parameters.adoc[]
+include::{snippets}/url-post/http-request.adoc[]
+include::{snippets}/url-post/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/url-post/http-response.adoc[]
+include::{snippets}/url-post/response-fields.adoc[]
+
+[[URL-Post-logged-in]]
+=== URL Post - 로그인 상태
+
+==== HTTP Request
+include::{snippets}/url-post-for-me/http-request.adoc[]
+include::{snippets}/url-post-for-me/request-headers.adoc[]
+include::{snippets}/url-post-for-me/request-fields.adoc[]
+
+==== HTTP Response
+include::{snippets}/url-post-for-me/http-response.adoc[]
+include::{snippets}/url-post-for-me/response-fields.adoc[]
+
+
+[[URL-Get-List]]
+=== URL Get List - 로그인 상태
+
+==== HTTP Request
+include::{snippets}/url-get-for-me/http-request.adoc[]
+include::{snippets}/url-get-for-me/request-headers.adoc[]
+include::{snippets}/url-get-for-me/query-parameters.adoc[]
 
 
 ==== HTTP Response
-include::{snippets}/url-get/http-response.adoc[]
-include::{snippets}/url-get/response-fields.adoc[]
+include::{snippets}/url-get-for-me/http-response.adoc[]
+include::{snippets}/url-get-for-me/response-fields.adoc[]
 
 
 [[URL-put]]
-=== URL PUT
+=== URL Put - 로그인 상태
 
 ==== HTTP Request
-include::{snippets}/url-put/http-request.adoc[]
-include::{snippets}/url-put/path-parameters.adoc[]
+include::{snippets}/url-put-for-me/http-request.adoc[]
+include::{snippets}/url-put-for-me/request-headers.adoc[]
+include::{snippets}/url-put-for-me/path-parameters.adoc[]
 
 
 ==== HTTP Response
-include::{snippets}/url-put/http-response.adoc[]
+include::{snippets}/url-put-for-me/http-response.adoc[]
 
 [[URL-put-with-invalid-expired-at]]
-=== URL PUT - 유효하지않은 만료날짜
+=== URL Put - 로그인 상태 - 유효하지 않은 만료기간
 
 ==== HTTP Request
-include::{snippets}/url-put-with-invalid-expired-at/http-request.adoc[]
-include::{snippets}/url-put-with-invalid-expired-at/path-parameters.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-expired-at/http-request.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-expired-at/request-headers.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-expired-at/path-parameters.adoc[]
 
 
 ==== HTTP Response
-include::{snippets}/url-put-with-invalid-expired-at/http-response.adoc[]
-include::{snippets}/url-put-with-invalid-expired-at/response-fields.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-expired-at/http-response.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-expired-at/response-fields.adoc[]
 
 
 [[URL-put-with-invalid-member]]
-=== URL PUT - 유효하지않은 소유권
+=== URL PUT - 로그인 상태 - 유효하지않은 소유권
 
 ==== HTTP Request
-include::{snippets}/url-put-with-invalid-member/http-request.adoc[]
-include::{snippets}/url-put-with-invalid-member/path-parameters.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-member/http-request.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-member/request-headers.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-member/path-parameters.adoc[]
 
 
 ==== HTTP Response
-include::{snippets}/url-put-with-invalid-member/http-response.adoc[]
-include::{snippets}/url-put-with-invalid-member/response-fields.adoc[]
-
-[[URL-expire]]
-=== URL Expire
-
-==== HTTP Request
-include::{snippets}/url-expire/http-request.adoc[]
-include::{snippets}/url-expire/path-parameters.adoc[]
-include::{snippets}/url-expire/request-fields.adoc[]
-
-
-==== HTTP Response
-include::{snippets}/url-expire/http-response.adoc[]
-include::{snippets}/url-expire/response-fields.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-member/http-response.adoc[]
+include::{snippets}/url-put-for-me-with-invalid-member/response-fields.adoc[]
 
 [[URL-delete]]
-=== URL Delete
+=== URL Delete - 로그인 상태
 
 ==== HTTP Request
-include::{snippets}/url-delete/http-request.adoc[]
-include::{snippets}/url-delete/path-parameters.adoc[]
-include::{snippets}/url-delete/request-fields.adoc[]
+include::{snippets}/url-delete-for-me/http-request.adoc[]
+include::{snippets}/url-delete-for-me/request-headers.adoc[]
+include::{snippets}/url-delete-for-me/path-parameters.adoc[]
+include::{snippets}/url-delete-for-me/request-fields.adoc[]
 
 
 ==== HTTP Response
-include::{snippets}/url-delete/http-response.adoc[]
+include::{snippets}/url-delete-for-me/http-response.adoc[]
+
+[[URL-expire]]
+=== URL Expire - 로그인 상태
+
+==== HTTP Request
+include::{snippets}/url-expire-for-me/http-request.adoc[]
+include::{snippets}/url-expire-for-me/request-headers.adoc[]
+include::{snippets}/url-expire-for-me/path-parameters.adoc[]
+include::{snippets}/url-expire-for-me/request-fields.adoc[]
+
+
+==== HTTP Response
+include::{snippets}/url-expire-for-me/http-response.adoc[]
+

@@ -20,8 +20,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import static org.mockito.BDDMockito.*;
-import static org.springframework.restdocs.headers.HeaderDocumentation.headerWithName;
-import static org.springframework.restdocs.headers.HeaderDocumentation.responseHeaders;
+import static org.springframework.restdocs.headers.HeaderDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.RestDocumentationRequestBuilders.*;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
@@ -101,9 +100,11 @@ class UrlControllerTest extends ControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andDo(document("url-post-logged-in",
+                .andDo(document("url-post-for-me",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("authorization").description("accessToken")),
                         requestFields(
                                 fieldWithPath("memberId").type(JsonFieldType.NUMBER)
                                         .description("memberId").optional(),
@@ -159,7 +160,7 @@ class UrlControllerTest extends ControllerTest {
         // when
         ResultActions resultActions = mockMvc.perform(RestDocumentationRequestBuilders.get("/{hash}", "hash"))
                 .andDo(print())
-                .andDo(document("url-redirect-expired",
+                .andDo(document("url-redirect-with-expired",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
                         pathParameters(
@@ -207,9 +208,11 @@ class UrlControllerTest extends ControllerTest {
                         .header("authorization", "Bearer TOKEN")
                 )
                 .andDo(print())
-                .andDo(document("url-get",
+                .andDo(document("url-get-for-me",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("authorization").description("accessToken")),
                         queryParameters(
                                 parameterWithName("memberId").description("member ID")
                         ),
@@ -247,9 +250,11 @@ class UrlControllerTest extends ControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andDo(document("url-put",
+                .andDo(document("url-put-for-me",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("authorization").description("accessToken")),
                         pathParameters(
                                 parameterWithName("hash").description("hash value of full url")
                         ),
@@ -288,9 +293,11 @@ class UrlControllerTest extends ControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andDo(document("url-put-with-invalid-expired-at",
+                .andDo(document("url-put-for-me-with-invalid-expired-at",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("authorization").description("accessToken")),
                         pathParameters(
                                 parameterWithName("hash").description("hash value of full url")
                         ),
@@ -337,9 +344,11 @@ class UrlControllerTest extends ControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andDo(document("url-put-with-invalid-member",
+                .andDo(document("url-put-for-me-with-invalid-member",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("authorization").description("accessToken")),
                         pathParameters(
                                 parameterWithName("hash").description("hash value of full url")
                         ),
@@ -363,6 +372,45 @@ class UrlControllerTest extends ControllerTest {
         resultActions.andExpect(status().isBadRequest());
 
     }
+
+    @Test
+    @DisplayName("로그인된 상태에서 만료된 url을 삭제하는 요청을 처리한다.")
+    void expire() throws Exception {
+        // given
+        ShortenUrlUpdateRequest request = ShortenUrlUpdateRequest.builder()
+                .memberId(1L)
+                .build();
+
+        willDoNothing().given(urlService).expire("hash", request);
+
+
+        // when
+        ResultActions resultActions = mockMvc.perform(post("/api/me/url/{hash}/expire", "hash")
+                        .header("authorization", "Bearer TOKEN")
+                        .characterEncoding("utf-8")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andDo(print())
+                .andDo(document("url-expire-for-me",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("authorization").description("accessToken")),
+                        pathParameters(
+                                parameterWithName("hash").description("hash value of full url")
+                        ),
+                        requestFields(
+                                fieldWithPath("memberId").type(JsonFieldType.NUMBER)
+                                        .description("memberId"),
+                                fieldWithPath("expireAt").type(JsonFieldType.STRING)
+                                        .description("prolong period").ignored()
+                        )
+                ));
+
+        // then
+        resultActions.andExpect(status().isOk());
+
+    }
     @Test
     @DisplayName("hash값에 해당하는 url을 삭제한다.")
     void deleteUrl() throws Exception {
@@ -380,9 +428,11 @@ class UrlControllerTest extends ControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andDo(document("url-delete",
+                .andDo(document("url-delete-for-me",
                         preprocessRequest(prettyPrint()),
                         preprocessResponse(prettyPrint()),
+                        requestHeaders(
+                                headerWithName("authorization").description("accessToken")),
                         pathParameters(
                                 parameterWithName("hash").description("hash value of full url")
                         ),
