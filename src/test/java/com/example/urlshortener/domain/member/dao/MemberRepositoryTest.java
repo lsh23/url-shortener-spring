@@ -22,9 +22,9 @@ class MemberRepositoryTest extends RepositoryTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        final String email = "solver@test.com";
+        final String email = "test@test.com";
         this.email = email;
-        final String password = "solver";
+        final String password = "test";
         Member build = Member.builder().email(email).password(password).build();
         saveMember = memberRepository.save(build);
     }
