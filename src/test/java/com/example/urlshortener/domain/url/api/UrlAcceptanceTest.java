@@ -1,6 +1,7 @@
 package com.example.urlshortener.domain.url.api;
 
 import com.example.urlshortener.domain.auth.dao.RefreshTokenRepository;
+import com.example.urlshortener.domain.auth.dao.SessionRepository;
 import com.example.urlshortener.domain.auth.dto.BasicLoginResponse;
 import com.example.urlshortener.domain.auth.dto.SignInReq;
 import com.example.urlshortener.domain.member.dao.MemberRepository;
@@ -78,6 +79,41 @@ public class UrlAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
+    @DisplayName("URL Shorten Url GET API - LIST - 비로그인 상태")
+    void getList() throws Exception {
+        // given
+        String sessionUuid = getSessionUuid();
+        ShortenUrlRequest request = ShortenUrlRequest.builder()
+                .fullUrl("www.test.com")
+                .sessionUuid(sessionUuid)
+                .build();
+
+        // when
+        given().log().all()
+                .contentType(MediaType.APPLICATION_JSON_VALUE)
+                .body(request)
+                .when()
+                .post("/api/url")
+                .then().log().all();
+
+
+        // when
+        ExtractableResponse<Response> extract = given().log().all()
+                .when()
+                .queryParam("sessionUuid", sessionUuid)
+                .get("/api/url")
+                .then().log().all()
+                .extract();
+
+        ShortenUrlsResponse body = extract.body().as(ShortenUrlsResponse.class);
+        List<ShortenUrlResponse> urls = body.getUrls();
+
+        // then
+        assertThat(extract.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(urls.size()).isNotZero();
+    }
+
+    @Test
     @DisplayName("URL Shorten Post API - 로그인 상태")
     void shortenUrlForMe() {
 
@@ -145,8 +181,8 @@ public class UrlAcceptanceTest extends AcceptanceTest {
     }
 
     @Test
-    @DisplayName("URL Shorten Url GET API - LIST")
-    void getList() throws Exception {
+    @DisplayName("URL Shorten Url GET API - LIST - 로그인 상태")
+    void getListForMe() throws Exception {
         // given
         requestSignup();
         BasicLoginResponse basicLoginResponse = requestSignin();

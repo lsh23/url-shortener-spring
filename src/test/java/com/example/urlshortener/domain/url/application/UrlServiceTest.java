@@ -1,5 +1,7 @@
 package com.example.urlshortener.domain.url.application;
 
+import com.example.urlshortener.domain.auth.dao.SessionRepository;
+import com.example.urlshortener.domain.auth.domain.Session;
 import com.example.urlshortener.domain.member.dao.MemberRepository;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.url.dao.UrlRepository;
@@ -16,6 +18,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -242,5 +245,30 @@ class UrlServiceTest extends IntegrationTest {
         assertThatThrownBy(()->urlRepository.findByHash(hash).orElseThrow()).isInstanceOf(NoSuchElementException.class);
     }
 
+    @Test
+    @DisplayName("sessionUuid로 url을 조죄한다.")
+    void findAllBySessionUuid(){
+        // given
+        Session session = new Session();
+        String uuid = UUID.randomUUID().toString();
+        session.assignUUID(uuid);
+        sessionRepository.save(session);
+
+        String url = "www.test.com";
+        Url savedUrl = Url.builder()
+                .fullUrl(url)
+                .hash(UrlShortener.shortenUrl(url))
+                .expiredAt(LocalDateTime.now().plusHours(1))
+                .build();
+
+        savedUrl.assignSession(session);
+        urlRepository.save(savedUrl);
+
+        // when
+        ShortenUrlsResponse urls = urlService.findAllBySessionUuid(uuid);
+
+        // then
+        assertThat(urls.getUrls().size()).isEqualTo(1);
+    }
 
 }

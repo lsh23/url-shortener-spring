@@ -81,6 +81,54 @@ class UrlControllerTest extends ControllerTest {
     }
 
     @Test
+    @DisplayName("비로그인 상태에서 short url을 조회하는 요청을 처리한다.")
+    void findShortenUrl() throws Exception {
+        // given
+
+        ShortenUrlResponse shortUrl_1 = ShortenUrlResponse.builder()
+                .fullUrl("www.test.com")
+                .hash("hash")
+                .build();
+
+        ShortenUrlResponse shortUrl_2 = ShortenUrlResponse.builder()
+                .fullUrl("www.test2.com")
+                .hash("hash2")
+                .build();
+
+        ShortenUrlsResponse expected = ShortenUrlsResponse.builder()
+                .urls(List.of(shortUrl_1, shortUrl_2))
+                .build();
+
+        given(urlService.findAllBySessionUuid("sessionUuid")).willReturn(expected);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/api/url")
+                        .param("sessionUuid", "sessionUuid")
+                )
+                .andDo(print())
+                .andDo(document("url-get",
+                        preprocessRequest(prettyPrint()),
+                        preprocessResponse(prettyPrint()),
+                        queryParameters(
+                                parameterWithName("sessionUuid").description("session UUID")
+                        ),
+                        responseFields(
+                                fieldWithPath("urls").type(JsonFieldType.ARRAY)
+                                        .description("url list")
+                                ,
+                                fieldWithPath("urls.[].fullUrl").type(JsonFieldType.STRING)
+                                        .description("full URL"),
+                                fieldWithPath("urls.[].hash").type(JsonFieldType.STRING)
+                                        .description("hash result for shorten")
+                        )
+                ));
+
+        // then
+        resultActions.andExpect(status().isOk());
+    }
+
+
+    @Test
     @DisplayName("로그인이 된 상태에서의 URL Shorten 요청을 처리한다.")
     void shortenUrlForMe() throws Exception {
         // given
@@ -186,7 +234,7 @@ class UrlControllerTest extends ControllerTest {
 
     @Test
     @DisplayName("로그인이 된 상태에서 short url을 조회하는 요청을 처리한다.")
-    void findShortenUrl() throws Exception {
+    void findShortenUrlForMe() throws Exception {
         // given
 
         ShortenUrlResponse shortUrl_1 = ShortenUrlResponse.builder()

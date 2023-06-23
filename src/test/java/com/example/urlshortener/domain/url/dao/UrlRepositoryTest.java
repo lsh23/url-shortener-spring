@@ -1,5 +1,7 @@
 package com.example.urlshortener.domain.url.dao;
 
+import com.example.urlshortener.domain.auth.dao.SessionRepository;
+import com.example.urlshortener.domain.auth.domain.Session;
 import com.example.urlshortener.domain.member.dao.MemberRepository;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.member.domain.MemberBuilder;
@@ -11,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -21,6 +24,9 @@ class UrlRepositoryTest extends RepositoryTest {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private SessionRepository sessionRepository;
 
     @Test
     @DisplayName("Hash 값으로 URL을 조회한다.")
@@ -70,6 +76,27 @@ class UrlRepositoryTest extends RepositoryTest {
 
         // then
         assertThat(urls.size()).isEqualTo(2);
+
+    }
+
+    @Test
+    @DisplayName("session uuid로 URL을 조회한다.")
+    void findAllBySessionUuid() {
+        // given
+        Session session = new Session();
+        String uuid = UUID.randomUUID().toString();
+        session.assignUUID(uuid);
+        sessionRepository.save(session);
+
+        Url url = Url.of("www.test.com", "hash");
+        url.assignSession(session);
+        urlRepository.save(url);
+
+        // when
+        List<Url> urls = urlRepository.findAllBySessionUuid(uuid);
+
+        // then
+        assertThat(urls.size()).isEqualTo(1);
 
     }
 

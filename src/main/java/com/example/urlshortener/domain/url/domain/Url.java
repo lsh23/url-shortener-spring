@@ -68,6 +68,10 @@ public class Url extends BaseTimeEntity {
         return member;
     }
 
+    public Session getSession() {
+        return session;
+    }
+
     public boolean checkExpired(LocalDateTime now) {
         if (now.isAfter(expiredAt)) {
             return true;
