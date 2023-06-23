@@ -35,6 +35,8 @@ public class UrlAcceptanceTest extends AcceptanceTest {
     private RefreshTokenRepository refreshTokenRepository;
     @Autowired
     private MemberRepository memberRepository;
+    @Autowired
+    private SessionRepository sessionRepository;
 
 
     @Override
@@ -44,14 +46,17 @@ public class UrlAcceptanceTest extends AcceptanceTest {
         urlRepository.deleteAllInBatch();
         refreshTokenRepository.deleteAll();
         memberRepository.deleteAllInBatch();
+        sessionRepository.deleteAllInBatch();
     }
 
     @Test
     @DisplayName("URL Shorten Post API - 비로그인 상태")
     void shortenUrl() {
         // given
+        String sessionUuid = getSessionUuid();
         ShortenUrlRequest request = ShortenUrlRequest.builder()
                 .fullUrl("www.test.com")
+                .sessionUuid(sessionUuid)
                 .build();
 
         // when
@@ -109,8 +114,10 @@ public class UrlAcceptanceTest extends AcceptanceTest {
     @DisplayName("URL Shorten Url redirect API")
     void redirect() throws Exception {
         // given
+        String sessionUuid = getSessionUuid();
         ShortenUrlRequest request = ShortenUrlRequest.builder()
                 .fullUrl("http://localhost:" + RestAssured.port + "/actuator/health")
+                .sessionUuid(sessionUuid)
                 .build();
 
         ExtractableResponse<Response> expected = given().log().all()
@@ -320,5 +327,14 @@ public class UrlAcceptanceTest extends AcceptanceTest {
                         .extract();
 
         return extract.body().as(ShortenUrlResponse.class);
+    }
+
+    private String getSessionUuid(){
+        return given().log().all()
+                        .when()
+                        .get("/api/auth/set-cookie")
+                        .then().log().all()
+                        .extract()
+                        .cookie("sessionId");
     }
 }

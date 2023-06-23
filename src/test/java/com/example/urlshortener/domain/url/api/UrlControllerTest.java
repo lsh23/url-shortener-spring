@@ -42,6 +42,7 @@ class UrlControllerTest extends ControllerTest {
         // given
         ShortenUrlRequest request = ShortenUrlRequest.builder()
                 .fullUrl("www.test.com")
+                .sessionUuid("uuid")
                 .build();
 
         ShortenUrlResponse expected = ShortenUrlResponse.builder()
@@ -62,7 +63,9 @@ class UrlControllerTest extends ControllerTest {
                         preprocessResponse(prettyPrint()),
                         requestFields(
                                 fieldWithPath("fullUrl").type(JsonFieldType.STRING)
-                                        .description("full URL")
+                                        .description("full URL"),
+                                fieldWithPath("sessionUuid").type(JsonFieldType.STRING)
+                                        .description("session UUID")
                         ),
                         responseFields(
                                 fieldWithPath("fullUrl").type(JsonFieldType.STRING)

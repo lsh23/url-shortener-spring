@@ -27,9 +27,16 @@ public class UrlService {
     public ShortenUrlResponse shortenUrl(ShortenUrlRequest shortenUrlRequest) {
         String fullUrl = shortenUrlRequest.getFullUrl();
         String hash = UrlShortener.shortenUrl(fullUrl);
+        String sessionUuid = shortenUrlRequest.getSessionUuid();
 
-        Url url = urlRepository.save(Url.of(fullUrl, hash));
+        Url url = Url.of(fullUrl, hash);
 
+        Session session = sessionRepository.findByUuid(sessionUuid)
+                .orElseThrow(() -> new SessionNotFoundException());
+
+        url.assignSession(session);
+
+        urlRepository.save(url);
         return ShortenUrlResponse.of(url);
     }
 

@@ -31,18 +31,27 @@ class UrlServiceTest extends IntegrationTest {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private SessionRepository sessionRepository;
 
     @BeforeEach
     public void setUp() throws Exception {
         urlRepository.deleteAllInBatch();
         memberRepository.deleteAllInBatch();
+        sessionRepository.deleteAllInBatch();
     }
 
     @Test
     @DisplayName("full url을 가지고 hash값을 생성하고 저장한다.")
     void shortenUrl() {
         // given
+        Session session = new Session();
+        String uuid = UUID.randomUUID().toString();
+        session.assignUUID(uuid);
+        sessionRepository.save(session);
+
         ShortenUrlRequest request = ShortenUrlRequest.builder()
+                .sessionUuid(uuid)
                 .fullUrl("www.test.com")
                 .build();
 
