@@ -35,6 +35,17 @@ include::{snippets}/url-post/request-fields.adoc[]
 include::{snippets}/url-post/http-response.adoc[]
 include::{snippets}/url-post/response-fields.adoc[]
 
+[[URL-Get-List]]
+=== URL Get List - 비로그인 상태
+
+==== HTTP Request
+include::{snippets}/url-get/http-request.adoc[]
+include::{snippets}/url-get/query-parameters.adoc[]
+
+==== HTTP Response
+include::{snippets}/url-get/http-response.adoc[]
+include::{snippets}/url-get/response-fields.adoc[]
+
 [[URL-Post-logged-in]]
 === URL Post - 로그인 상태
 
