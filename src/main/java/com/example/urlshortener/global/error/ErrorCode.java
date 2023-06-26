@@ -26,6 +26,10 @@ public enum ErrorCode {
     EXPIRED_TOKEN(400,"O004","만료된 token 입니다."),
     FETCH_ACCESS_TOKEN(500, "O005","oauth login에 실패했습니다."),
 
+    // Auth
+    ALREADY_SESSION_EXIST(400, "A001", "이미 세션이 존재합니다."),
+    DUPLICATED_SESSION_UUID(500, "A002", "이미 존재하는 UUID가 할당되어 세션생성에 실패했습니다." ),
+
     // URL
     INVALID_HASH(400, "U001", "hash 값에 대응 되는 URL이 존재하지 않습니다."),
     EXPIRED_URL(400, "U002", "해당 url은 만료된 url입니다."),

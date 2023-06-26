@@ -1,5 +1,6 @@
 package com.example.urlshortener.domain.url.domain;
 
+import com.example.urlshortener.domain.auth.domain.Session;
 import com.example.urlshortener.domain.url.exception.InvalidProlongExpirationPeriodException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -75,6 +76,22 @@ class UrlTest {
 
     }
 
+    @Test
+    @DisplayName("")
+    void assignSession(){
+        // give
+        Url url = Url.builder()
+                .build();
+
+        Session expected = new Session();
+
+        // when
+        url.assignSession(expected);
+
+        // then
+        Session actual = url.getSession();
+        assertThat(actual).isEqualTo(expected);
+    }
 
     private static Stream<Arguments> provideLocalDateTimesForCheckExpired() {
         return Stream.of(

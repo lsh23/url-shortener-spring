@@ -2,7 +2,9 @@ package com.example.urlshortener.domain.auth.api;
 
 import com.example.urlshortener.domain.auth.application.AuthService;
 import com.example.urlshortener.domain.auth.dto.*;
+import com.example.urlshortener.domain.auth.exception.AlreadySessionExist;
 import com.example.urlshortener.test.ControllerTest;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -13,6 +15,7 @@ import org.springframework.test.web.servlet.ResultActions;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
+import static org.springframework.restdocs.cookies.CookieDocumentation.*;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
@@ -158,5 +161,59 @@ class AuthControllerTest extends ControllerTest {
 
         // then
         resultActions.andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("session 생성 요청을 처리하고 session id를 쿠키에 저장하도록한다.")
+    void cookie() throws Exception {
+        // given
+        SessionDto expected = SessionDto.builder().uuid("uuid").build();
+
+        given(authService.makeSession(any(),any())).willReturn(expected);
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/api/auth/set-cookie"))
+                .andDo(print())
+                .andDo(document("auth-set-cookie",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                requestCookies(
+                                        cookieWithName("sessionId").description("Session ID").optional()),
+                                responseCookies(
+                                        cookieWithName("sessionId").description("Session ID"))
+                        )
+                );
+        // then
+        resultActions.andExpect(status().isOk());
+    }
+
+    @Test
+    @DisplayName("session을 가지고 있는 상태에서 session 생성 요청을 하면 예외를 응답한다.")
+    void cookieWithDuplicatedSession() throws Exception {
+        // given
+        SessionDto expected = SessionDto.builder().uuid("uuid").build();
+
+        given(authService.makeSession(any(),any())).willThrow(new AlreadySessionExist());
+
+        // when
+        ResultActions resultActions = mockMvc.perform(get("/api/auth/set-cookie").cookie(new Cookie("sessionId", "uuid")))
+                .andDo(print())
+                .andDo(document("auth-set-cookie-already-session-exist",
+                                preprocessRequest(prettyPrint()),
+                                preprocessResponse(prettyPrint()),
+                                requestCookies(
+                                        cookieWithName("sessionId").description("Session ID").optional()),
+                                responseFields(
+                                        fieldWithPath("message").type(JsonFieldType.STRING)
+                                                .description("오류 메시지"),
+                                        fieldWithPath("code").type(JsonFieldType.STRING)
+                                                .description("Application error code"),
+                                        fieldWithPath("status").type(JsonFieldType.NUMBER)
+                                                .description("http status")
+                                )
+                        )
+                );
+        // then
+        resultActions.andExpect(status().isBadRequest());
     }
 }

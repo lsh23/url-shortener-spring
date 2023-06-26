@@ -35,4 +35,25 @@ include::{snippets}/auth-refresh/request-fields.adoc[]
 include::{snippets}/auth-refresh/http-response.adoc[]
 include::{snippets}/auth-refresh/response-fields.adoc[]
 
+[[Auth-cookie]]
+=== cookie
 
+==== HTTP Request
+include::{snippets}/auth-set-cookie/http-request.adoc[]
+include::{snippets}/auth-set-cookie/request-cookies.adoc[]
+
+==== HTTP Response
+include::{snippets}/auth-set-cookie/http-response.adoc[]
+include::{snippets}/auth-set-cookie/response-cookies.adoc[]
+
+
+[[Auth-cookie]]
+=== cookie-already-session-exist
+
+==== HTTP Request
+include::{snippets}/auth-set-cookie-already-session-exist/http-request.adoc[]
+include::{snippets}/auth-set-cookie-already-session-exist/request-cookies.adoc[]
+
+==== HTTP Response
+include::{snippets}/auth-set-cookie-already-session-exist/http-response.adoc[]
+include::{snippets}/auth-set-cookie-already-session-exist/response-fields.adoc[]

@@ -3,8 +3,11 @@ package com.example.urlshortener.domain.auth.api;
 import com.example.urlshortener.domain.auth.application.AuthService;
 import com.example.urlshortener.domain.auth.dto.*;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -26,6 +29,14 @@ public class AuthController {
     public ResponseEntity<RefreshAuthResponse> refreshAuth(@RequestBody final RefreshAuthRequest refreshTokenReq) {
         RefreshAuthResponse refreshAuthResponse = authService.refreshAuth(refreshTokenReq);
         return ResponseEntity.ok().body(refreshAuthResponse);
+    }
+
+    @GetMapping("/set-cookie")
+    public ResponseEntity<Void> cookie(@CookieValue(value = "sessionId", required = false) String sessionId) {
+        SessionDto sessionDto = authService.makeSession(sessionId, UUID.randomUUID().toString());
+        return ResponseEntity.ok()
+                .header(HttpHeaders.SET_COOKIE, sessionDto.toCookie().toString())
+                .build();
     }
 
 }

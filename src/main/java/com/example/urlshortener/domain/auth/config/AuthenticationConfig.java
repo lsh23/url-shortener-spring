@@ -23,6 +23,7 @@ public class AuthenticationConfig implements WebMvcConfigurer {
                 "/api/members/signup",
                 "/api/auth/oauth",
                 "/api/auth/signin",
+                "/api/auth/set-cookie",
                 "/docs/index.html",
                 "/favicon.ico",
                 "/api/url",

@@ -9,4 +9,5 @@ import java.util.Optional;
 public interface UrlRepository extends JpaRepository<Url, Long> {
     Optional<Url> findByHash(String hash);
     List<Url> findAllByMemberId(Long memberId);
+    List<Url> findAllBySessionUuid(String SessionUuid);
 }

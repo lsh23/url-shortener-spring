@@ -1,5 +1,6 @@
 package com.example.urlshortener.domain.url.domain;
 
+import com.example.urlshortener.domain.auth.domain.Session;
 import com.example.urlshortener.domain.member.domain.Member;
 import com.example.urlshortener.domain.url.exception.InvalidProlongExpirationPeriodException;
 import com.example.urlshortener.global.common.domain.BaseTimeEntity;
@@ -29,8 +30,9 @@ public class Url extends BaseTimeEntity {
     @JoinColumn(name = "member_id")
     private Member member;
 
-    @Column(name = "cookie_id")
-    private String cookieId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "session_id")
+    private Session session;
 
     @Column(name = "expired_at")
     private LocalDateTime expiredAt;
@@ -66,6 +68,10 @@ public class Url extends BaseTimeEntity {
         return member;
     }
 
+    public Session getSession() {
+        return session;
+    }
+
     public boolean checkExpired(LocalDateTime now) {
         if (now.isAfter(expiredAt)) {
             return true;
@@ -86,5 +92,9 @@ public class Url extends BaseTimeEntity {
 
     public void expire(LocalDateTime now) {
         this.expiredAt = now;
+    }
+
+    public void assignSession(Session session) {
+        this.session = session;
     }
 }
