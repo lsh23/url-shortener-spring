@@ -1,0 +1,25 @@
+spring:
+  datasource:
+    url: jdbc:mysql://db:3306/url_shortener
+    username: root
+    password: 1234
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+    hibernate.ddl-auto: update
+    properties:
+      hibernate:
+        show_sql: true
+        format_sql: true
+
+  jwt:
+    token:
+      secret-key: devjwtsecretkeyforaccesstokendevjwtsecretkeyforaccesstoken
+      expire-length: 1800000
+      refresh-secret-key: devjwtsecretkeyforrefreshtokendevjwtsecretkeyforrefreshtoken
+      refresh-expire-length: 259200000
+
+  data:
+    redis:
+      port: 6379
+      host: redis

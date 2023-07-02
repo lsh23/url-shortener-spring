@@ -1,0 +1,26 @@
+version: "3"
+services:
+
+  db:
+    image: mysql
+    environment:
+      MYSQL_DATABASE: url_shortener
+      MYSQL_ROOT_PASSWORD: 1234
+    ports:
+      - "13306:3306"
+
+  redis:
+    image: redis
+    ports:
+      - "16379:6379"
+
+  web:
+    build: .
+    entrypoint: java -Dspring.profiles.active=dev -jar /url-shortener.jar
+    restart: on-failure
+    ports:
+      - "18080:8080"
+    depends_on:
+      - db
+      - redis
+
